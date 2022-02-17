@@ -34,14 +34,18 @@ class MCTS():
         if s not in self.Es:
             self.Es[s] = game.checkWin()
         if self.Es[s] != 0:
+            if self.Es[s] == 2: # tie
+                return 0
             return -self.Es[s]
         
         if s not in self.Ps:
             pi, v = self.model.forward(game.getBoard())
             validMoves = game.getValidMoves()
             pi *= validMoves
-            assert(np.sum(pi) != 0)
+            if np.sum(pi) <= 0:
+                pi = pi + validMoves
             pi /= np.sum(pi)
+
 
             self.Ps[s] = pi
             self.Vs[s] = validMoves

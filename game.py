@@ -64,9 +64,6 @@ class gobang:
         assert (0 <= i < self.boardsize and 0 <= j < self.boardsize), 'checkWin error.'
         if self.board[i][j] == 0:
             return 0
-        if self.totalMoves == self.boardsize * self.boardsize:
-            return 2
-
         cnt = 1
         k = j + 1
         while(k < self.boardsize and self.board[i][k] == self.board[i][j]):
@@ -121,7 +118,10 @@ class gobang:
             k -= 1
             l += 1
         if cnt >= 5:
-            return self.board[i][j]        
+            return self.board[i][j]  
+
+        if self.totalMoves == self.boardsize * self.boardsize: ## tie
+            return 2      
         return 0
 
 
