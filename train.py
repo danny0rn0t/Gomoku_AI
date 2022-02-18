@@ -4,6 +4,7 @@ from game import gobang
 from MCTS import MCTS
 from tqdm import tqdm
 from play import play
+from copy import deepcopy
 
 class train:
     def __init__(self, game: gobang, model: PolicyNetworkAgent, args):
@@ -23,7 +24,7 @@ class train:
                 for item in trainData:
                     item[2] = item[2] * result
                 return trainData
-            probs = self.mcts.simulateAndPredict(self.game, self.args.NUM_SIMULATION)
+            probs = self.mcts.simulateAndPredict(deepcopy(self.game), self.args.NUM_SIMULATION)
             s = self.game.getBoard().tobytes()
             a = np.random.choice(range(len(probs)), p=probs)
             trainData.append([s, a, self.game.turn])
