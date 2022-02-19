@@ -31,7 +31,7 @@ def play(game: gobang, player1: PolicyNetworkAgent, player2: PolicyNetworkAgent,
                 print('wrong format')
                 continue
             i, j = pos
-            if not (0 <= i < game.boardsize and 0 <= j < game.boardsize and game.board[i][j] == 0):
+            if not (0 <= i < game.boardsize and 0 <= j < game.boardsize and board[i][j] == 0):
                 print('invalid position')
                 continue
             board = game.play(board, i, j, turn)
