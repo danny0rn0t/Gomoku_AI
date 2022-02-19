@@ -16,6 +16,7 @@ parser.add_argument("--boardsize", type=int, default=9)
 parser.add_argument("--NUM_SIMULATION", type=int, default=25)
 parser.add_argument("--NUM_GAME_INFERENCE", type=int, default=40)
 parser.add_argument("--MODEL_SAVE_PATH", type=str, default="checkpoint.ckpt")
+parser.add_argument("--NUM_EPOCH", type=int, default=10)
 parser.add_argument("--BATCHSIZE", type=int, default=8)
 
 args = parser.parse_args()
