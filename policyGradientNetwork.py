@@ -99,14 +99,14 @@ class PolicyNetworkAgent():
                 board = torch.FloatTensor(np.array(board).astype(np.float64)).contiguous()
                 y_pi = torch.FloatTensor(np.array(y_pi).astype(np.float64)).contiguous()
                 y_v = torch.FloatTensor(np.array(y_v).astype(np.float64)).contiguous()
-                print(f"debug: board.shape = {board.shape}, y_pi.shape = {y_pi.shape}, y_v.shape = {y_v.shape}")
+                # print(f"debug: board.shape = {board.shape}, y_pi.shape = {y_pi.shape}, y_v.shape = {y_v.shape}")
 
                 if self.args.cuda:
                     board = board.cuda()
                     y_pi = y_pi.cuda()
                     y_v = y_v.cuda()
                 X_pi, X_v = self.network(board)
-                print(f"debug: X_pi.shape = {X_pi.shape}, X_v.shape = {X_v.shape}")
+                # print(f"debug: X_pi.shape = {X_pi.shape}, X_v.shape = {X_v.shape}")
                 loss = self.calcLoss(X_pi, y_pi, X_v, y_v)
                 self.optimizer.zero_grad()
                 loss.backward()
