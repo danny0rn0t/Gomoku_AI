@@ -59,7 +59,7 @@ class MCTS():
         bestScore = -float('inf')
         bestMove = None
 
-        for a in range(self.game.boardsize * self.game.boardsize):
+        for a in range(self.game.boardsize**2):
             if not validMoves[a]:
                 continue
             if (s, a) in self.Qsa:
@@ -69,6 +69,8 @@ class MCTS():
             if u > bestScore:
                 bestScore = u
                 bestMove = a
+
+        a = bestMove
         
         nxtState = self.game.play(state, bestMove // self.game.boardsize, bestMove % self.game.boardsize)
         nxtState = nxtState * (-1) # switch to the perspective of the other player
