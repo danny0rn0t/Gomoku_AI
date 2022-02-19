@@ -11,6 +11,7 @@ from play import play
 parser = argparse.ArgumentParser()
 parser.add_argument("--play", action='store_true')
 parser.add_argument("--train", action='store_true')
+parser.add_argument("--order", type=int, default=1)
 parser.add_argument("--cuda", type=bool, default=True)
 parser.add_argument("--NUM_ITERATION", type=int, default=1000)
 parser.add_argument("--NUM_EPISODE", type=int, default=100)
@@ -30,11 +31,15 @@ def training():
     trainer = train(game, model1, args)
     trainer.train()
 def playing():
+    assert (args.order == 1 or args.order == 2)
     game = gobang(args.boardsize)
     model1 = PolicyNetwork(game)
     model1 = PolicyNetworkAgent(model1, args)
     model1.load(args.MODEL_SAVE_PATH)
-    play(game, 'human', model1, args.NUM_SIMULATION, True)
+    if args.order == 1:
+        play(game, 'human', model1, args.NUM_SIMULATION, True)
+    else:
+        play(game, model1, 'human', args.NUM_SIMULATION, True)
 
 if __name__ == '__main__':
     if args.train and args.play:
