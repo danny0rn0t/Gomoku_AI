@@ -16,6 +16,7 @@ class MCTS():
         self.Vs = {} # valid moves at state s
     
     def simulateAndPredict(self, state: np.ndarray, NUM_SIMULATION: int):
+        print(f"debug: state = {state}")
         s = state.tobytes()
 
         for i in range(NUM_SIMULATION):
