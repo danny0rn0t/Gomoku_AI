@@ -47,21 +47,14 @@ def play(game: gobang, player1: PolicyNetworkAgent, player2: PolicyNetworkAgent,
             game.printBoard(board)
         result = game.evaluate(board)
         if result != 0:
-            winner = None
-            if result == 1:
-                winner = turn
-            elif result == -1:
-                winner = turn * (-1)
-            else:
-                winner = 2
             if display:
-                if winner == 1:
+                if result == 1:
                     print("Player1 won!")
-                elif winner == -1:
+                elif result == -1:
                     print("Player2 won!")
                 else:
                     print("Its a Tie!")
-            return winner
+            return result
 
         if turn == 1:
             player = player2
