@@ -16,7 +16,7 @@ class MCTS():
         self.Vs = {} # valid moves at state s
     
     def simulateAndPredict(self, state: np.ndarray, NUM_SIMULATION: int):
-        print(f"debug: state = {state}")
+        # print(f"debug: state = {state}")
         s = state.tobytes()
 
         for i in range(NUM_SIMULATION):
@@ -44,7 +44,7 @@ class MCTS():
             
             validMoves = self.game.getValidMoves(state)
             pi *= validMoves
-            print(f"debug: pi = {pi}, v = {v}")
+            # print(f"debug: pi = {pi}, v = {v}")
             if np.sum(pi) <= 0:
                 pi = pi + validMoves
             pi /= np.sum(pi)
