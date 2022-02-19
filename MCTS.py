@@ -40,7 +40,7 @@ class MCTS():
         
         if s not in self.Ps:
             pi, v = self.model.forward(state)
-            validMoves = self.game.getValidMoves()
+            validMoves = self.game.getValidMoves(state)
             pi *= validMoves
             if np.sum(pi) <= 0:
                 pi = pi + validMoves
