@@ -9,7 +9,7 @@ from play import play
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--cuda", type=bool, default=False)
+parser.add_argument("--cuda", type=bool, default=True)
 parser.add_argument("--NUM_ITERATION", type=int, default=1000)
 parser.add_argument("--NUM_EPISODE", type=int, default=100)
 parser.add_argument("--boardsize", type=int, default=9)
@@ -18,21 +18,24 @@ parser.add_argument("--NUM_GAME_INFERENCE", type=int, default=40)
 parser.add_argument("--MODEL_SAVE_PATH", type=str, default="checkpoint.ckpt")
 parser.add_argument("--NUM_EPOCH", type=int, default=10)
 parser.add_argument("--BATCHSIZE", type=int, default=8)
-
 args = parser.parse_args()
 
-game = gobang(args.boardsize)
-model1 = PolicyNetwork(game)
-model1 = PolicyNetworkAgent(model1, args)
-model1.load(args.MODEL_SAVE_PATH)
-model2 = PolicyNetwork(game)
-model2 = PolicyNetworkAgent(model2, args)
-# play(game, model1, model2, 10, True)
-# play(game, 'human', 'human', 100, True)
-# play(game, 'human', model1, 10, True)
+def training():
+    game = gobang(args.boardsize)
+    model1 = PolicyNetwork(game)
+    model1 = PolicyNetworkAgent(model1, args)
+    model1.load(args.MODEL_SAVE_PATH)
+    trainer = train(game, model1, args)
+    trainer.train()
+def playing():
+    game = gobang(args.boardsize)
+    model1 = PolicyNetwork(game)
+    model1 = PolicyNetworkAgent(model1, args)
+    model1.load(args.MODEL_SAVE_PATH)
+    play(game, 'human', model1, args.NUM_SIMULATION, True)
 
-trainer = train(game, model1, args)
-trainer.train()
+if __name__ == '__main__':
+    playing()
 
 
 
