@@ -11,16 +11,17 @@ class train:
         self.oldModel = model
         self.newModel = PolicyNetworkAgent(PolicyNetwork(game), args)
         self.game = game
-        self.mcts = None
+        self.mcts = MCTS(game, self.oldModel)
         self.args = args
         self.trainData = []
     def executeEpisode(self):
-        self.mcts = MCTS(self.game, self.oldModel)
         trainData = [] # [board, action, player{1, -1}]
-        self.game.clearBoard()
+        board = self.game.getEmptyBoard()
         while True:
-            result = self.game.checkWin()
+            result = self.game.evaluate(board)
             if result != 0: # game ended
+                if result == 2: # tie
+                    result = 0
                 for item in trainData:
                     item[2] = item[2] * result
                 return trainData

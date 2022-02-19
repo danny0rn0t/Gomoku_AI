@@ -30,7 +30,7 @@ class gobang:
         print('|', end='')
         print()
         for i in range(self.boardsize):
-            print('|', end='')
+            print(f'{i + 1}|', end='')
             for j in range(self.boardsize):
                 if board[i][j] == 0:
                     print('- ', end='')
