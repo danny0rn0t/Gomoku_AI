@@ -17,6 +17,7 @@ class train:
     def executeEpisode(self):
         trainData = [] # [board, action, player{1, -1}]
         board = self.game.getEmptyBoard()
+        turn = 1
         while True:
             result = self.game.evaluate(board)
             if result != 0: # game ended
@@ -25,11 +26,12 @@ class train:
                 for item in trainData:
                     item[2] = item[2] * result
                 return trainData
-            probs = self.mcts.simulateAndPredict(deepcopy(self.game), self.args.NUM_SIMULATION)
-            s = self.game.getBoard().tobytes()
+            probs = self.mcts.simulateAndPredict(board * turn, self.args.NUM_SIMULATION)
+            s = (board * turn).tobytes()
             a = np.random.choice(range(len(probs)), p=probs)
-            trainData.append([s, a, self.game.turn])
-            self.game.play(a // self.game.boardsize, a % self.game.boardsize)
+            trainData.append([s, a, turn])
+            board = self.game.play(board, a // self.game.boardsize, a % self.game.boardsize, turn)
+            turn *= (-1)
     
     def train(self):
         for i in range(self.args.NUM_ITERATION):
@@ -41,15 +43,17 @@ class train:
             self.newModel.load(self.args.MODEL_SAVE_PATH)
             
             self.newModel.learn(data)
-            oldWins = newWins = 0
+            oldWins = newWins = ties = 0
             for j in range(self.args.NUM_GAME_INFERENCE):
                 result = play(self.game, self.newModel, self.oldModel, self.args.NUM_SIMULATION)
                 if result == 1:
                     newWins += 1
                 elif result == -1:
                     oldWins += 1
+                else:
+                    ties += 1
             winrate = newWins / (newWins + oldWins) if newWins > 0 else 0
-            print(f"iteration: {i}, winrate = {winrate}")
+            print(f"iteration: {i} | {newWins} win, {oldWins} loss, {ties} tie |")
             if winrate >= 0.55:
                 self.newModel.save(self.args.MODEL_SAVE_PATH)
                 self.oldModel.load(self.args.MODEL_SAVE_PATH)

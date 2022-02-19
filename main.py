@@ -28,10 +28,10 @@ model2 = PolicyNetwork(game)
 model2 = PolicyNetworkAgent(model2, args)
 # play(game, model1, model2, 10, True)
 # play(game, 'human', 'human', 100, True)
-play(game, 'human', model1, 10, True)
+# play(game, 'human', model1, 10, True)
 
-#helper = train(game, model, args)
-#helper.train()
+trainer = train(game, model1, args)
+trainer.train()
 
 
 
