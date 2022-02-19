@@ -44,7 +44,7 @@ class train:
             
             self.newModel.learn(data)
             oldWins = newWins = ties = 0
-            for j in range(self.args.NUM_GAME_INFERENCE):
+            for j in tqdm(range(self.args.NUM_GAME_INFERENCE)):
                 result = play(self.game, self.newModel, self.oldModel, self.args.NUM_SIMULATION)
                 if result == 1:
                     newWins += 1
