@@ -62,7 +62,7 @@ def play(game: gobang, player1: PolicyNetworkAgent, player2: PolicyNetworkAgent,
         else: # AI
             probs = mct.simulateAndPredict(board * turn, NUM_SIMULATION)
             pos = np.argmax(probs)
-            game.play(pos // game.boardsize, pos % game.boardsize, turn)
+            board = game.play(board, pos // game.boardsize, pos % game.boardsize, turn)
 
         if turn == 1:
             player = player2

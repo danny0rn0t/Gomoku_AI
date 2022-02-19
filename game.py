@@ -18,6 +18,7 @@ class gobang:
         return np.array(res)
     def play(self, board: np.ndarray, i: int, j: int, player: int = 1) -> int:
         assert (0 <= i < self.boardsize and 0 <= j < self.boardsize), 'play error.'
+        # print(f"DEBUG: board[i][j] = {board[i][j]}")
         assert (board[i][j] == 0), 'play error.'
         res = board.copy()
         res[i][j] = player
