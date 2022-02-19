@@ -26,13 +26,15 @@ class gobang:
     def printBoard(self, board) -> int:
         print('*|', end='')
         for i in range(self.boardsize):
-            print(f'{i + 1} ', end='')
+            print(f'{i + 1}', end='')
+            if i != self.boardsize - 1:
+                print(' ', end='')
         print('|')
         # print(' |', end='')
         # for i in range(self.boardsize * 2 + 1):
         #     print('-', end='')
         # print('|', end='')
-        print()
+        # print()
         for i in range(self.boardsize):
             print(f'{i + 1}|', end='')
             for j in range(self.boardsize):
