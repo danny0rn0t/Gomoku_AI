@@ -24,14 +24,14 @@ class gobang:
         res[i][j] = player
         return res
     def printBoard(self, board) -> int:
-        print('  ', end='')
+        print('* ', end='')
         for i in range(self.boardsize):
             print(f'{i + 1} ', end='')
         print()
-        print(' |', end='')
-        for i in range(self.boardsize * 2 + 1):
-            print('-', end='')
-        print('|', end='')
+        # print(' |', end='')
+        # for i in range(self.boardsize * 2 + 1):
+        #     print('-', end='')
+        # print('|', end='')
         print()
         for i in range(self.boardsize):
             print(f'{i + 1}|', end='')
@@ -46,10 +46,10 @@ class gobang:
                     print(' ', end='')
             print('|', end='')
             print()
-        print(' |', end='')
-        for i in range(self.boardsize * 2 + 1):
-            print('-' ,end='')
-        print('|')
+        # print(' |', end='')
+        # for i in range(self.boardsize * 2 + 1):
+        #     print('-' ,end='')
+        # print('|')
         return 0
     def evaluate(self, board: np.ndarray) -> int:
         for j in range(self.boardsize): # check column
