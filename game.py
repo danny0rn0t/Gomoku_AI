@@ -27,6 +27,7 @@ class gobang:
         print('  ', end='')
         for i in range(self.boardsize):
             print(f'{i + 1} ', end='')
+        print()
         print(' |', end='')
         for i in range(self.boardsize):
             print('--', end='')
