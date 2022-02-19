@@ -41,6 +41,7 @@ class MCTS():
         
         if s not in self.Ps:
             pi, v = self.model.forward(state)
+            print(f"debug: pi = {pi}, v = {v}")
             validMoves = self.game.getValidMoves(state)
             pi *= validMoves
             if np.sum(pi) <= 0:
