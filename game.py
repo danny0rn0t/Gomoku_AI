@@ -40,7 +40,7 @@ class gobang:
                     print('X ', end='')
             print('|', end='')
             print()
-        print('|', end='')
+        print(' |', end='')
         for i in range(self.boardsize):
             print('--' ,end='')
         print('|')
