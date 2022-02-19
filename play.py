@@ -61,7 +61,9 @@ def play(game: gobang, player1: PolicyNetworkAgent, player2: PolicyNetworkAgent,
 
         else: # AI
             probs = mct.simulateAndPredict(board * turn, NUM_SIMULATION)
+            print(f"debug: probs = {probs}")
             pos = np.argmax(probs)
+            print(f"debug: pos = {pos}")
             board = game.play(board, pos // game.boardsize, pos % game.boardsize, turn)
 
         if turn == 1:
