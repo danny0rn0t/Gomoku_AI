@@ -48,7 +48,7 @@ def play(game: gobang, player1: PolicyNetworkAgent, player2: PolicyNetworkAgent,
                 else:
                     print("Its a Tie!")
             return winner
-        if curPlayer == 'human':
+        if player == 'human':
             pos = list(map(int, input('x y =>').split()))
             if len(pos) != 2:
                 print('wrong format')
