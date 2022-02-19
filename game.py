@@ -24,10 +24,10 @@ class gobang:
         res[i][j] = player
         return res
     def printBoard(self, board) -> int:
-        print('* ', end='')
+        print('*|', end='')
         for i in range(self.boardsize):
             print(f'{i + 1} ', end='')
-        print()
+        print('|')
         # print(' |', end='')
         # for i in range(self.boardsize * 2 + 1):
         #     print('-', end='')
