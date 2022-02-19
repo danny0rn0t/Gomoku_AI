@@ -5,6 +5,7 @@ from policyGradientNetwork import *
 import argparse
 from MCTS import MCTS
 from train import train
+from play import play
 
 
 parser = argparse.ArgumentParser()
@@ -20,11 +21,15 @@ parser.add_argument("--BATCHSIZE", type=int, default=8)
 args = parser.parse_args()
 
 game = gobang(args.boardsize)
-model = PolicyNetwork(game)
-model = PolicyNetworkAgent(model, args)
-model.load(args.MODEL_SAVE_PATH)
-helper = train(game, model, args)
-helper.train()
+model1 = PolicyNetwork(game)
+model1 = PolicyNetworkAgent(model1, args)
+model1.load(args.MODEL_SAVE_PATH)
+model2 = PolicyNetwork(game)
+model2 = PolicyNetworkAgent(model2, args)
+play(game, model1, model2, 10, True)
+
+#helper = train(game, model, args)
+#helper.train()
 
 
 

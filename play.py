@@ -5,32 +5,51 @@ import torch
 from MCTS import MCTS
 
 
-def play(game: gobang, player1: PolicyNetworkAgent, player2: PolicyNetworkAgent, NUM_SIMULATION, display=False):
-    game.clearBoard()
+def play(game: gobang, player1: PolicyNetworkAgent, player2: PolicyNetworkAgent, NUM_SIMULATION: int, display=False):
+    board = game.getEmptyBoard()
     mct1 = None
     mct2 = None
     if player1 != 'human':
-        mct1 = MCTS(player1)
+        mct1 = MCTS(game, player1)
     if player2 != 'human':
-        mct2 = MCTS(player2)
-    curPlayer = player1
+        mct2 = MCTS(game, player2)
+
+    player = player1
     mct = mct1
     turn = 1
+    '''
+    win condition:
+    | prev turn | cur turn | result | final result |
+    |     1     |    -1    |    1   |       
+    '''
     while True:
-        result = game.checkWin()
+        result = game.evaluate(board)
         if result != 0:
+            winner = None
+            if result == 1:
+                if turn == 1:
+                    winner = -1
+                else:
+                    winner = 1
+            elif result == -1:
+                if turn == 1:
+                    winner = 1
+                else:
+                    winner = -1
+            else:
+                winner = 2
             if display:
                 game.printBoard()
-                if result == 1:
-                    print("Player1 wins!")
-                elif result == -1:
-                    print("Player2 wins!")
+                if winner == 1:
+                    print("Player1 won!")
+                elif winner == -1:
+                    print("Player2 won!")
                 else:
-                    print("Tie!")
-            return result
+                    print("Its a Tie!")
+            return winner
 
         if display:
-            game.printBoard()
+            game.printBoard(board)
         if curPlayer == 'human':
             pos = list(map(int, input('x y =>').split()))
             if len(pos) != 2:
@@ -40,17 +59,17 @@ def play(game: gobang, player1: PolicyNetworkAgent, player2: PolicyNetworkAgent,
             if not (0 <= i < game.boardsize and 0 <= j < game.boardsize and game.board[i][j] == 0):
                 print('invalid position')
                 continue
-            game.play(i, j)
+            board = game.play(board, i, j, turn)
 
         else: # AI
-            probs = mct.simulateAndPredict(game, NUM_SIMULATION)
+            probs = mct.simulateAndPredict(board * turn, NUM_SIMULATION)
             pos = np.argmax(probs)
-            game.play(pos // game.boardsize, pos % game.boardsize)
+            game.play(pos // game.boardsize, pos % game.boardsize, turn)
 
         if turn == 1:
             curPlayer = player2
             mct = mct2
-            turn = 2
+            turn = -1
         else:
             curPlayer = player1
             mct = mct1

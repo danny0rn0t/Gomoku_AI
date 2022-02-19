@@ -15,7 +15,7 @@ class train:
         self.args = args
         self.trainData = []
     def executeEpisode(self):
-        self.mcts = MCTS(self.oldModel)
+        self.mcts = MCTS(self.game, self.oldModel)
         trainData = [] # [board, action, player{1, -1}]
         self.game.clearBoard()
         while True:

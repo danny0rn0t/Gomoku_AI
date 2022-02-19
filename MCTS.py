@@ -5,8 +5,9 @@ from game import gobang
 from policyGradientNetwork import *
 from copy import deepcopy
 class MCTS():
-    def __init__(self, model: PolicyNetworkAgent):
+    def __init__(self, game: gobang, model: PolicyNetworkAgent):
         self.model = model
+        self.game = game
         self.Qsa = {} # expected reward for taking action a from state s
         self.Nsa = {} # number of time taking action a from state s
         self.Ns = {} # number of time state s was visited 
@@ -14,33 +15,32 @@ class MCTS():
         self.Es = {} # check game result at state s
         self.Vs = {} # valid moves at state s
     
-    def simulateAndPredict(self, startGame: gobang, NUM_SIMULATION):
-        s = startGame.getBoard().tobytes()
+    def simulateAndPredict(self, state: np.ndarray, NUM_SIMULATION: int):
+        s = state.tobytes()
 
         for i in range(NUM_SIMULATION):
-            game = deepcopy(startGame)
-            self.search(game)
+            self._run(state)
         cnt = []
-        for a in range(startGame.boardsize * startGame.boardsize):
+        for a in range(self.game.boardsize**2):
             if (s, a) not in self.Nsa:
                 cnt.append(0)
             else:
                 cnt.append(self.Nsa[(s, a)])
         cnt = np.array(cnt)
-        print(self.Nsa.values())
+        #print(self.Nsa.values())
         return cnt / np.sum(cnt)
-    def search(self, game: gobang):
-        s = game.getBoard().tobytes()
+    def _run(self, state: np.ndarray):
+        s = state.tobytes()
         if s not in self.Es:
-            self.Es[s] = game.checkWin()
+            self.Es[s] = self.game.checkWin(state)
         if self.Es[s] != 0:
             if self.Es[s] == 2: # tie
                 return 0
             return -self.Es[s]
         
         if s not in self.Ps:
-            pi, v = self.model.forward(game.getBoard())
-            validMoves = game.getValidMoves()
+            pi, v = self.model.forward(state)
+            validMoves = self.game.getValidMoves()
             pi *= validMoves
             if np.sum(pi) <= 0:
                 pi = pi + validMoves
@@ -56,7 +56,7 @@ class MCTS():
         bestScore = -float('inf')
         bestMove = None
 
-        for a in range(game.boardsize * game.boardsize):
+        for a in range(self.game.boardsize * self.game.boardsize):
             if not validMoves[a]:
                 continue
             if (s, a) in self.Qsa:
@@ -67,8 +67,9 @@ class MCTS():
                 bestScore = u
                 bestMove = a
         
-        game.play(bestMove // game.boardsize, bestMove % game.boardsize)
-        v = self.search(game)
+        nxtState = self.game.play(state, bestMove // self.game.boardsize, bestMove % self.game.boardsize)
+        nxtState = nxtState * (-1) # switch to the perspective of the other player
+        v = self._run(nxtState)
 
         if (s, a) in self.Qsa:
             self.Qsa[(s, a)] = (self.Nsa[(s, a)] * self.Qsa[(s, a)] + v) / (self.Nsa[(s, a)] + 1)

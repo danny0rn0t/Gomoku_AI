@@ -1,41 +1,28 @@
 import numpy as np
+from copy import deepcopy
 class gobang:
     def __init__(self, boardsize):
         # black: 1
         # white: -1
         self.boardsize = boardsize
-        self.turn = 1
-        self.totalMoves = 0
-        self.board = np.zeros((boardsize, boardsize))
-        self.lastmove = (0, 0)
-    def getBoard(self):
-        return (self.board * self.turn)
-    def getValidMoves(self):
+    def getEmptyBoard(self):
+        return np.zeros((self.boardsize, self.boardsize))
+    def getValidMoves(self, board):
         res = []
         for i in range(self.boardsize):
             for j in range(self.boardsize):
-                if self.board[i][j] == 0:
+                if board[i][j] == 0:
                     res.append(1)
                 else:
                     res.append(0)
         return np.array(res)
-    def play(self, i: int, j: int) -> int:
+    def play(self, board: np.ndarray, i: int, j: int, player: int = 1) -> int:
         assert (0 <= i < self.boardsize and 0 <= j < self.boardsize), 'play error.'
-        assert (self.board[i][j] == 0), 'play error.'
-        
-        self.board[i][j] = self.turn
-        self.turn = 1 if self.turn == -1 else -1
-        self.totalMoves += 1
-        self.lastmove = (i, j)
-        return 0
-    def clearBoard(self) -> int:
-        for i in range(self.boardsize):
-            for j in range(self.boardsize):
-                self.board[i][j] = 0
-        self.turn = 1
-        self.totalMoves = 0
-        return 0
-    def printBoard(self) -> int:
+        assert (board[i][j] == 0), 'play error.'
+        res = board.copy()
+        res[i][j] = player
+        return res
+    def printBoard(self, board) -> int:
         print('|', end='')
         for i in range(self.boardsize):
             print('--', end='')
@@ -44,9 +31,9 @@ class gobang:
         for i in range(self.boardsize):
             print('|', end='')
             for j in range(self.boardsize):
-                if self.board[i][j] == 0:
+                if board[i][j] == 0:
                     print('- ', end='')
-                elif self.board[i][j] == 1:
+                elif board[i][j] == 1:
                     print('O ', end='')
                 else:
                     print('X ', end='')
@@ -57,71 +44,57 @@ class gobang:
             print('--' ,end='')
         print('|')
         return 0
-    def checkWin(self, i=None, j=None) -> int:
-        assert ((i == None and j == None) or (i != None and j != None))
-        if i == None and j == None:
-            i, j = self.lastmove
-        assert (0 <= i < self.boardsize and 0 <= j < self.boardsize), 'checkWin error.'
-        if self.board[i][j] == 0:
-            return 0
-        cnt = 1
-        k = j + 1
-        while(k < self.boardsize and self.board[i][k] == self.board[i][j]):
-            cnt += 1
-            k += 1
-        k = j - 1
-        while(k >= 0 and self.board[i][k] == self.board[i][j]):
-            cnt += 1
-            k -= 1
-        if cnt >= 5:
-            return self.board[i][j]
-
-        cnt = 1
-        k = i + 1
-        while(k < self.boardsize and self.board[k][j] == self.board[i][j]):
-            cnt += 1
-            k += 1
-        k = i - 1
-        while(k >= 0 and self.board[k][j] == self.board[i][j]):
-            cnt += 1
-            k -= 1
-        if cnt >= 5:
-            return self.board[i][j]
-
-        cnt = 1
-        k = i + 1
-        l = j + 1
-        while(k < self.boardsize and l < self.boardsize and self.board[k][l] == self.board[i][j]):
-            cnt += 1
-            k += 1
-            l += 1
-        k = i - 1
-        l = j - 1
-        while(k >= 0 and l >= 0 and self.board[k][l] == self.board[i][j]):
-            cnt += 1
-            k -= 1
-            l -= 1
-        if cnt >= 5:
-            return self.board[i][j]
-        
-        cnt = 1
-        k = i + 1
-        l = j - 1
-        while(k < self.boardsize and l >= 0 and self.board[k][l] == self.board[i][j]):
-            cnt += 1
-            k += 1
-            l -= 1
-        k = i - 1
-        l = j + 1
-        while(k >= 0 and l < self.boardsize and self.board[k][l] == self.board[i][j]):
-            cnt += 1
-            k -= 1
-            l += 1
-        if cnt >= 5:
-            return self.board[i][j]  
-
-        if self.totalMoves == self.boardsize * self.boardsize: ## tie
-            return 2      
+    def evaluate(self, board: np.ndarray) -> int:
+        for j in range(self.boardsize): # check column
+            res = self._helper(board, 0, j, 1, 0)
+            if res != 0:
+                return res
+        for i in range(self.boardsize): # check row
+            res = self._helper(board, i, 0, 0, 1)
+            if res != 0:
+                return res
+        # left diagonal
+        for i in range(self.boardsize):
+            res = self._helper(board, i, 0, 1, 1)
+            if res != 0:
+                return res
+        for j in range(1, self.boardsize):
+            res = self._helper(board, 0, j, 1, 1)
+            if res != 0:
+                return res
+        # right diagnoal
+        for i in range(self.boardsize):
+            res = self._helper(board, i, 0, -1, 1)
+            if res != 0:
+                return res
+        for j in range(self.boardsize):
+            res = self._helper(board, self.boardsize - 1, j, -1, 1)
+            if res != 0:
+                return res
+        if 0 not in board:
+            return 2
+        return 0           
+    def _helper(self, board, si, sj, di, dj):
+        cur = 0
+        cnt = 0
+        i = si
+        j = sj
+        while 0 <= i < self.boardsize and 0 <= j < self.boardsize:
+            if board[i][j] == 0:
+                cur = 0
+                cnt = 0
+            elif cur == board[i][j]:
+                cnt += 1
+            else:
+                cur = board[i][j]
+                cnt = 1
+            if cnt >= 5:
+                return cur
+            i += di
+            j += dj
         return 0
+            
+            
+ 
 
 
