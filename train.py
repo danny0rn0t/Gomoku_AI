@@ -29,7 +29,7 @@ class train:
             probs = self.mcts.simulateAndPredict(board * turn, self.args.NUM_SIMULATION)
             s = (board * turn).tobytes()
             a = np.random.choice(range(len(probs)), p=probs)
-            trainData.append([s, a, turn])
+            trainData.append([board * turn, a, turn])
             board = self.game.play(board, a // self.game.boardsize, a % self.game.boardsize, turn)
             turn *= (-1)
     
