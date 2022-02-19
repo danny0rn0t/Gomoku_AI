@@ -9,6 +9,8 @@ from play import play
 
 
 parser = argparse.ArgumentParser()
+parser.add_argument("--play", action='store_true')
+parser.add_argument("--train", action='store_true')
 parser.add_argument("--cuda", type=bool, default=True)
 parser.add_argument("--NUM_ITERATION", type=int, default=1000)
 parser.add_argument("--NUM_EPISODE", type=int, default=100)
@@ -35,7 +37,14 @@ def playing():
     play(game, 'human', model1, args.NUM_SIMULATION, True)
 
 if __name__ == '__main__':
-    playing()
+    if args.train and args.play:
+        print("One work at a time!")
+    elif args.train:
+        training()
+    elif args.play:
+        playing()
+    else:
+        print("No work was assigned!")
 
 
 

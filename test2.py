@@ -1,5 +1,9 @@
-lst = [[1,2], [2,3]]
-for item in lst:
-    print(item)
-    item[0] = 0
-print(lst)
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--a", action='store_true')
+parser.add_argument("--b", action='store_true')
+
+args = parser.parse_args()
+print(args.a)
+print(args.b)
