@@ -23,6 +23,8 @@ def play(game: gobang, player1: PolicyNetworkAgent, player2: PolicyNetworkAgent,
     |     1     |    -1    |    1   |       
     '''
     while True:
+        if display:
+            game.printBoard(board)
         result = game.evaluate(board)
         if result != 0:
             winner = None
@@ -39,7 +41,6 @@ def play(game: gobang, player1: PolicyNetworkAgent, player2: PolicyNetworkAgent,
             else:
                 winner = 2
             if display:
-                game.printBoard()
                 if winner == 1:
                     print("Player1 won!")
                 elif winner == -1:
@@ -47,9 +48,6 @@ def play(game: gobang, player1: PolicyNetworkAgent, player2: PolicyNetworkAgent,
                 else:
                     print("Its a Tie!")
             return winner
-
-        if display:
-            game.printBoard(board)
         if curPlayer == 'human':
             pos = list(map(int, input('x y =>').split()))
             if len(pos) != 2:
@@ -67,11 +65,11 @@ def play(game: gobang, player1: PolicyNetworkAgent, player2: PolicyNetworkAgent,
             game.play(pos // game.boardsize, pos % game.boardsize, turn)
 
         if turn == 1:
-            curPlayer = player2
+            player = player2
             mct = mct2
             turn = -1
         else:
-            curPlayer = player1
+            player = player1
             mct = mct1
             turn = 1
         
