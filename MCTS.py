@@ -32,7 +32,7 @@ class MCTS():
     def _run(self, state: np.ndarray):
         s = state.tobytes()
         if s not in self.Es:
-            self.Es[s] = self.game.checkWin(state)
+            self.Es[s] = self.game.evaluate(state)
         if self.Es[s] != 0:
             if self.Es[s] == 2: # tie
                 return 0
