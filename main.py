@@ -31,6 +31,8 @@ if __name__ == '__main__':
         model = ResidualPolicyNetwork(game, num_layers=5)
         model = PolicyNetworkAgent(model, args)
         model.load(args.MODEL_SAVE_PATH)
+        print(model.network.state_dict)
+        raise
         trainer = train(game, model, args)
         trainer.train()
     elif args.play:
