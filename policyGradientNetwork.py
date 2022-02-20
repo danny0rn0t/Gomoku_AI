@@ -122,9 +122,9 @@ class PolicyNetworkAgent():
             "optimizer": self.optimizer.state_dict()
         }
         torch.save(Agent_Dict, PATH)
-    def load(self, PATH) -> int:
+    def load(self, PATH, map_location='cpu') -> int:
         try:
-            checkpoint = torch.load(PATH)
+            checkpoint = torch.load(PATH, map_location=map_location)
             print(f"Loading checkpoint from {PATH} ...")
         except:
             print(f"Checkpoint not found, skip loading.")
