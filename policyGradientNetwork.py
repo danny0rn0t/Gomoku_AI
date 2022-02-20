@@ -1,3 +1,4 @@
+from email.policy import strict
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -122,9 +123,9 @@ class PolicyNetworkAgent():
             "optimizer": self.optimizer.state_dict()
         }
         torch.save(Agent_Dict, PATH)
-    def load(self, PATH, map_location='cpu') -> int:
+    def load(self, PATH) -> int:
         try:
-            checkpoint = torch.load(PATH, map_location=map_location)
+            checkpoint = torch.load(PATH, strict=False)
             print(f"Loading checkpoint from {PATH} ...")
         except:
             print(f"Checkpoint not found, skip loading.")
