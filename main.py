@@ -28,7 +28,7 @@ if __name__ == '__main__':
         print("One work at a time!")
     elif args.train:
         game = gobang(args.boardsize)
-        model = ResidualPolicyNetwork(game, num_layers=5)
+        model = ResidualPolicyNetwork(game, num_layers=10)
         model = PolicyNetworkAgent(model, args)
         model.load(args.MODEL_SAVE_PATH)
         trainer = train(game, model, args)
@@ -36,7 +36,7 @@ if __name__ == '__main__':
     elif args.play:
         assert (args.order == 1 or args.order == 2)
         game = gobang(args.boardsize)
-        model = ResidualPolicyNetwork(game, num_layers=5)
+        model = ResidualPolicyNetwork(game, num_layers=10)
         model = PolicyNetworkAgent(model, args)
         model.load(args.MODEL_SAVE_PATH)
         if args.order == 1:
