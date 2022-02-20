@@ -68,7 +68,7 @@ class ResidualPolicyNetwork(nn.Module):
         x = self.residualBlocks(x) # N * 256 * bs * bs
         pi = self.piHead(x)
         v = self.vHead(x)
-        return torch.exp(x), v
+        return torch.exp(pi), v
 
 class PolicyNetworkAgent():
     def __init__(self, network: ResidualPolicyNetwork, args):
