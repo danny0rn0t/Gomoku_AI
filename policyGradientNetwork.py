@@ -46,6 +46,7 @@ class ResidualPolicyNetwork(nn.Module):
             nn.Conv2d(256, 2, 1, 1), # N * 2 * bs * bs
             nn.BatchNorm2d(2),
             nn.ReLU(),
+            nn.Flatten(),
             nn.Linear(2 * self.game.boardsize * self.game.boardsize, self.game.boardsize * self.game.boardsize),
             nn.LogSoftmax(dim=1)
         )
@@ -54,6 +55,7 @@ class ResidualPolicyNetwork(nn.Module):
             nn.Conv2d(256, 1, 1, 1), # N * 1 * bs * bs
             nn.BatchNorm2d(1),
             nn.ReLU(),
+            nn.Flatten(),
             nn.Linear(self.game.boardsize * self.game.boardsize, 256),
             nn.ReLU(),
             nn.Linear(256, 1),
@@ -123,7 +125,9 @@ class PolicyNetworkAgent():
     def load(self, PATH) -> int:
         try:
             checkpoint = torch.load(PATH)
+            print(f"Loading checkpoint from {PATH} ...")
         except:
+            print(f"Loading failed.")
             return -1
         self.network.load_state_dict(checkpoint["network"])
         self.optimizer.load_state_dict(checkpoint["optimizer"])
