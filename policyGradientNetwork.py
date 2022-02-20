@@ -130,7 +130,7 @@ class PolicyNetworkAgent():
         # except:
         #     print(f"Checkpoint not found, skip loading.")
         #     return -1
-        checkpoint = torch.load(PATH, strict=True)
+        checkpoint = torch.load(PATH)
         self.network.load_state_dict(checkpoint["network"])
         self.optimizer.load_state_dict(checkpoint["optimizer"])
         return 0
