@@ -14,7 +14,7 @@ class train:
         self.mcts = MCTS(game, self.oldModel)
         self.args = args
         self.trainData = []
-    def executeEpisode(self):
+    def selfPlay(self):
         trainData = [] # [board, action, player{1, -1}]
         board = self.game.getEmptyBoard()
         turn = 1
@@ -38,7 +38,7 @@ class train:
             pass
             data = []
             for _ in tqdm(range(self.args.NUM_EPISODE)):
-                data += self.executeEpisode()
+                data += self.selfPlay()
             self.oldModel.save(self.args.MODEL_SAVE_PATH)
             self.newModel.load(self.args.MODEL_SAVE_PATH)
             
