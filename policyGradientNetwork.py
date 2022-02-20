@@ -92,7 +92,7 @@ class PolicyNetworkAgent():
         return pi, v
     def learn(self, target):
         target = PolicyGradientNetworkDataset(target)
-        target = DataLoader(target, batch_size=self.args.BATCHSIZE, shuffle=True, drop_last=False)
+        target = DataLoader(target, batch_size=self.args.BATCHSIZE, shuffle=True, drop_last=True)
         for epoch in range(self.args.NUM_EPOCH):
             self.network.train()
             for board, y_pi, y_v in tqdm(target):
