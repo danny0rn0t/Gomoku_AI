@@ -29,8 +29,6 @@ if __name__ == '__main__':
     elif args.train:
         game = gobang(args.boardsize)
         model = ResidualPolicyNetwork(game, num_layers=5)
-        print(model)
-        raise
         model = PolicyNetworkAgent(model, args)
         model.load(args.MODEL_SAVE_PATH)
         trainer = train(game, model, args)
