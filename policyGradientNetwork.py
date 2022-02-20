@@ -1,3 +1,4 @@
+from turtle import forward
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -7,78 +8,77 @@ from tqdm import tqdm
 from dataset import PolicyGradientNetworkDataset
 import numpy as np
 
-
-class PolicyNetwork(nn.Module):
-    def __init__(self, game: gobang):
-        super().__init__()
-        self.boardsize = game.boardsize
-        self.conv1 = nn.Conv2d(1, 512, 3, 1, 1)
-        self.conv2 = nn.Conv2d(512, 512, 3, 1, 1)
-        self.conv3 = nn.Conv2d(512, 512, 3, 1)
-        self.conv4 = nn.Conv2d(512, 512, 3, 1)
-    
-        self.bn2d = nn.BatchNorm2d(512)
-        self.bn1d1 = nn.BatchNorm1d(1024)
-        self.bn1d2 = nn.BatchNorm1d(512)
-
-        self.fc1 = nn.Linear(512 * (self.boardsize - 4) * (self.boardsize - 4), 1024)
-        self.fc2 = nn.Linear(1024, 512)
-        self.fc3 = nn.Linear(512, self.boardsize * self.boardsize)
-        self.fc4 = nn.Linear(512, 1)
-
-    
+class _ResidualBlock(nn.Module):
+    def __init__(self, in_channels, out_channels):
+        super(_ResidualBlock, self).__init__()
+        self.conv1 = nn.Conv2d(in_channels, 256, 3, 1, 1)
+        self.bn1 = nn.BatchNorm2d(256)
+        self.act1 = nn.ReLU()
+        self.conv2 = nn.Conv2d(256, out_channels, 3, 1, 1)
+        self.bn2 = nn.BatchNorm2d(out_channels)
+        self.act2 = nn.ReLU()
     def forward(self, x):
-        x = x.view(-1, 1, self.boardsize, self.boardsize)
-        
+        residual = x
         x = self.conv1(x)
-        x = self.bn2d(x)
-        x = nn.ReLU()(x)
+        x = self.bn1(x)
+        x = self.act1(x)
 
         x = self.conv2(x)
-        x = self.bn2d(x)
-        x = nn.ReLU()(x)
+        x = self.bn2(x)
+        x += residual
+        x = self.act2(x)
+        return x
 
-        x = self.conv3(x)
-        x = self.bn2d(x)
-        x = nn.ReLU()(x)
-
-        x = self.conv4(x)
-        x = self.bn2d(x)
-        x = nn.ReLU()(x)
-
-        x = x.view(-1, 512 * (self.boardsize - 4) * (self.boardsize - 4))
-
-        x = self.fc1(x)
-        x = self.bn1d1(x)
-        x = nn.ReLU()(x)
-        x = nn.Dropout(0.3, inplace=True)(x)
-
-        x = self.fc2(x)
-        x = self.bn1d2(x)
-        x = nn.ReLU()(x)
-        x = nn.Dropout(0.3, inplace=True)(x)
-
-        pi = v = x
-
-        pi = self.fc3(pi)
-        pi = nn.functional.log_softmax(pi, dim=1)
-        #pi = nn.exp(pi)
-
-        v = self.fc4(v)
-        v = nn.Tanh()(v)
-
-        return torch.exp(pi), v
+class ResidualPolicyNetwork(nn.Module):
+    def __init__(self, game: gobang, num_layers=20):
+        super(ResidualPolicyNetwork, self).__init__()
+        self.game = game
+        self.convNet1 = nn.Sequential(
+            nn.Conv2d(1, 256, 3, 1, 1),
+            nn.BatchNorm2d(256),
+            nn.ReLU()
+        )
+        layers = []
+        for i in range(num_layers):
+            layers.append(_ResidualBlock(256, 256))
+        self.residualBlocks = nn.Sequential(*layers)
+        self.piHead = nn.Sequential(
+            # pi.shape = N * 256 * bs * bs
+            nn.Conv2d(256, 2, 1, 1), # N * 2 * bs * bs
+            nn.BatchNorm2d(2),
+            nn.ReLU(),
+            nn.Linear(2 * self.game.boardsize * self.game.boardsize, self.game.boardsize * self.game.boardsize),
+            nn.LogSoftmax(dim=1)
+        )
+        self.vHead = nn.Sequential(
+            # v.shape = N * 256 * bs * bs
+            nn.Conv2d(256, 1, 1, 1), # N * 1 * bs * bs
+            nn.BatchNorm2d(1),
+            nn.ReLU(),
+            nn.Linear(self.game.boardsize * self.game.boardsize, 256),
+            nn.ReLU(),
+            nn.Linear(256, 1),
+            nn.Tanh()
+        )
+    def forward(self, x):
+        # x.shape = N * boardsize * boardsize
+        x = x.view(-1, 1, self.boardsize, self.boardsize) # N * 1 * boardsize * boardsize
+        x = self.convNet1(x) # N * 256 * bs * bs
+        x = self.residualBlocks(x) # N * 256 * bs * bs
+        pi = self.piHead(x)
+        v = self.vHead(x)
+        return torch.exp(x), v
 
 class PolicyNetworkAgent():
-    def __init__(self, network: PolicyNetwork, args):
+    def __init__(self, network: ResidualPolicyNetwork, args):
         self.network = network
-        self.optimizer = optim.SGD(self.network.parameters(), lr=0.001)
+        self.optimizer = optim.SGD(self.network.parameters(), lr=0.001, momentum=0.9, weight_decay=0.0001)
         self.args = args
         self.boardsize = self.network.boardsize
         if args.cuda:
             self.network.cuda()
     def forward(self, board: np.ndarray):
-        # board: numpy array with shape boardsize * boardsize
+        # board.shape = (boardsize, boardsize)
         board = torch.FloatTensor(board.astype(np.float64)).contiguous()
         if self.args.cuda:
             board = board.cuda()
@@ -131,7 +131,66 @@ class PolicyNetworkAgent():
         return 0
 
 
+'''
+class PolicyNetwork(nn.Module):
+    def __init__(self, game: gobang):
+        super().__init__()
+        self.boardsize = game.boardsize
+        self.conv1 = nn.Conv2d(1, 512, 3, 1, 1)
+        self.conv2 = nn.Conv2d(512, 512, 3, 1, 1)
+        self.conv3 = nn.Conv2d(512, 512, 3, 1)
+        self.conv4 = nn.Conv2d(512, 512, 3, 1)
+    
+        self.bn2d = nn.BatchNorm2d(512)
+        self.bn1d1 = nn.BatchNorm1d(1024)
+        self.bn1d2 = nn.BatchNorm1d(512)
+
+        self.fc1 = nn.Linear(512 * (self.boardsize - 4) * (self.boardsize - 4), 1024)
+        self.fc2 = nn.Linear(1024, 512)
+        self.fc3 = nn.Linear(512, self.boardsize * self.boardsize)
+        self.fc4 = nn.Linear(512, 1)    
+    def forward(self, x):
+        x = x.view(-1, 1, self.boardsize, self.boardsize)
         
+        x = self.conv1(x)
+        x = self.bn2d(x)
+        x = nn.ReLU()(x)
+
+        x = self.conv2(x)
+        x = self.bn2d(x)
+        x = nn.ReLU()(x)
+
+        x = self.conv3(x)
+        x = self.bn2d(x)
+        x = nn.ReLU()(x)
+
+        x = self.conv4(x)
+        x = self.bn2d(x)
+        x = nn.ReLU()(x)
+
+        x = x.view(-1, 512 * (self.boardsize - 4) * (self.boardsize - 4))
+
+        x = self.fc1(x)
+        x = self.bn1d1(x)
+        x = nn.ReLU()(x)
+        x = nn.Dropout(0.3, inplace=True)(x)
+
+        x = self.fc2(x)
+        x = self.bn1d2(x)
+        x = nn.ReLU()(x)
+        x = nn.Dropout(0.3, inplace=True)(x)
+
+        pi = v = x
+
+        pi = self.fc3(pi)
+        pi = nn.functional.log_softmax(pi, dim=1)
+        #pi = nn.exp(pi)
+
+        v = self.fc4(v)
+        v = nn.Tanh()(v)
+
+        return torch.exp(pi), v
+'''    
     
 
 

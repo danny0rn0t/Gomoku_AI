@@ -23,31 +23,26 @@ parser.add_argument("--NUM_EPOCH", type=int, default=10)
 parser.add_argument("--BATCHSIZE", type=int, default=8)
 args = parser.parse_args()
 
-def training():
-    game = gobang(args.boardsize)
-    model1 = PolicyNetwork(game)
-    model1 = PolicyNetworkAgent(model1, args)
-    model1.load(args.MODEL_SAVE_PATH)
-    trainer = train(game, model1, args)
-    trainer.train()
-def playing():
-    assert (args.order == 1 or args.order == 2)
-    game = gobang(args.boardsize)
-    model1 = PolicyNetwork(game)
-    model1 = PolicyNetworkAgent(model1, args)
-    model1.load(args.MODEL_SAVE_PATH)
-    if args.order == 1:
-        play(game, 'human', model1, args.NUM_SIMULATION, True)
-    else:
-        play(game, model1, 'human', args.NUM_SIMULATION, True)
-
 if __name__ == '__main__':
     if args.train and args.play:
         print("One work at a time!")
     elif args.train:
-        training()
+        game = gobang(args.boardsize)
+        model = ResidualPolicyNetwork(game, num_layers=10)
+        model = PolicyNetworkAgent(model, args)
+        model.load(args.MODEL_SAVE_PATH)
+        trainer = train(game, model, args)
+        trainer.train()
     elif args.play:
-        playing()
+        assert (args.order == 1 or args.order == 2)
+        game = gobang(args.boardsize)
+        model = ResidualPolicyNetwork(game, num_layers=10)
+        model = PolicyNetworkAgent(model, args)
+        model.load(args.MODEL_SAVE_PATH)
+        if args.order == 1:
+            play(game, 'human', model, args.NUM_SIMULATION, True)
+        else:
+            play(game, model, 'human', args.NUM_SIMULATION, True)
     else:
         print("No work was assigned!")
 
