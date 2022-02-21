@@ -54,7 +54,7 @@ class train:
                     ties += 1
             winrate = newWins / (newWins + oldWins) if newWins > 0 else 0
             print(f"iteration: {i} | {newWins} win, {oldWins} loss, {ties} tie |")
-            if winrate >= 0.55:
+            if winrate >= self.args.update_threshold:
                 print("Update new model!")
                 self.newModel.save(self.args.MODEL_SAVE_PATH)
                 self.oldModel.load(self.args.MODEL_SAVE_PATH)
