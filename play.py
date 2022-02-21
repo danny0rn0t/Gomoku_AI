@@ -5,13 +5,11 @@ import torch
 from MCTS import MCTS
 
 
-def play(game: gobang, player1: PolicyNetworkAgent, player2: PolicyNetworkAgent, NUM_SIMULATION: int, display=False):
+def play(game: gobang, player1: PolicyNetworkAgent, player2: PolicyNetworkAgent, NUM_SIMULATION: int, mct1=None, mct2=None, display=False):
     board = game.getEmptyBoard()
-    mct1 = None
-    mct2 = None
-    if player1 != 'human':
+    if player1 != 'human' and mct1 is None:
         mct1 = MCTS(game, player1)
-    if player2 != 'human':
+    if player2 != 'human' and mct2 is None:
         mct2 = MCTS(game, player2)
 
     player = player1
