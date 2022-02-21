@@ -9,7 +9,7 @@ from copy import deepcopy
 class train:
     def __init__(self, game: gobang, model: PolicyNetworkAgent, args):
         self.oldModel = model
-        self.newModel = PolicyNetworkAgent(ResidualPolicyNetwork(game, 10), args)
+        self.newModel = PolicyNetworkAgent(ResidualPolicyNetwork(game, args.residual_layers), args)
         self.game = game
         self.mcts = MCTS(game, self.oldModel)
         self.args = args

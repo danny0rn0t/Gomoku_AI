@@ -18,9 +18,10 @@ parser.add_argument("--NUM_EPISODE", type=int, default=100) # paper: 500000
 parser.add_argument("--boardsize", type=int, default=9)
 parser.add_argument("--NUM_SIMULATION", type=int, default=160) # paper: 1600
 parser.add_argument("--NUM_GAME_INFERENCE", type=int, default=40) # paper: 400
-parser.add_argument("--MODEL_SAVE_PATH", type=str, default="checkpoint.pt")
+parser.add_argument("--MODEL_SAVE_PATH", type=str, default="checkpoint.ckpt")
 parser.add_argument("--NUM_EPOCH", type=int, default=10)
 parser.add_argument("--BATCHSIZE", type=int, default=8)
+parser.add_argument("--residual_layers", type=int, default=5)
 args = parser.parse_args()
 
 if __name__ == '__main__':
@@ -28,7 +29,7 @@ if __name__ == '__main__':
         print("One work at a time!")
     elif args.train:
         game = gobang(args.boardsize)
-        model = ResidualPolicyNetwork(game, num_layers=10)
+        model = ResidualPolicyNetwork(game, num_layers=args.residual_layers)
         model = PolicyNetworkAgent(model, args)
         model.load(args.MODEL_SAVE_PATH)
         trainer = train(game, model, args)
@@ -36,7 +37,7 @@ if __name__ == '__main__':
     elif args.play:
         assert (args.order == 1 or args.order == 2)
         game = gobang(args.boardsize)
-        model = ResidualPolicyNetwork(game, num_layers=10)
+        model = ResidualPolicyNetwork(game, num_layers=args.residual_layers)
         model = PolicyNetworkAgent(model, args)
         model.load(args.MODEL_SAVE_PATH)
         if args.order == 1:
