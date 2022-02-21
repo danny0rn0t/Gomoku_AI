@@ -45,13 +45,16 @@ class train:
             self.newModel.learn(data)
             oldWins = newWins = ties = 0
             for j in tqdm(range(self.args.NUM_GAME_INFERENCE)):
-                result = play(self.game, self.newModel, self.oldModel, self.args.NUM_SIMULATION)
-                if result == 1:
-                    newWins += 1
-                elif result == -1:
-                    oldWins += 1
+                if j % 2 == 0:
+                    result = play(self.game, self.newModel, self.oldModel, self.args.NUM_SIMULATION)
+                    if result == 1: newWins += 1
+                    elif result == -1: oldWins += 1
+                    else: ties += 1
                 else:
-                    ties += 1
+                    result = play(self.game, self.oldModel, self.newModel, self.args.NUM_SIMULATION)
+                    if result == 1: oldWins += 1
+                    elif result == -1: newWins += 1
+                    else: ties += 1
             winrate = newWins / (newWins + oldWins) if newWins > 0 else 0
             print(f"iteration: {i} | {newWins} win, {oldWins} loss, {ties} tie |")
             if winrate >= self.args.update_threshold:
