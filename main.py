@@ -42,9 +42,9 @@ if __name__ == '__main__':
         model = PolicyNetworkAgent(model, args)
         model.load(args.MODEL_SAVE_PATH)
         if args.order == 1:
-            play(game, 'human', model, args.NUM_SIMULATION, True)
+            play(game, 'human', model, args.NUM_SIMULATION, display=True)
         else:
-            play(game, model, 'human', args.NUM_SIMULATION, True)
+            play(game, model, 'human', args.NUM_SIMULATION, display=True)
     else:
         print("No work was assigned!")
 
