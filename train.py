@@ -44,8 +44,8 @@ class train:
             
             self.newModel.learn(data)
             oldWins = newWins = ties = 0
-            mct_old = MCTS(self.game, oldModel)
-            mct_new = MCTS(self.game, newModel)
+            mct_old = MCTS(self.game, self.oldModel)
+            mct_new = MCTS(self.game, self.newModel)
             for j in tqdm(range(self.args.NUM_GAME_INFERENCE)):
                 if j % 2 == 0:
                     result = play(self.game, self.newModel, self.oldModel, self.args.NUM_SIMULATION, mct1=mct_new, mct2=mct_old)
