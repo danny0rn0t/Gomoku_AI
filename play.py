@@ -47,7 +47,7 @@ def play(game: gobang, player1: PolicyNetworkAgent, player2: PolicyNetworkAgent,
         if display:
             game.printBoard(board)
             if winrate is not None:
-                print(f"winrate: {winrate}%")
+                print(f"winrate:{winrate: .2f}%")
         result = game.evaluate(board)
         if result != 0:
             if display:
