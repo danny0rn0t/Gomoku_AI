@@ -23,6 +23,7 @@ def play(game: gobang, player1: PolicyNetworkAgent, player2: PolicyNetworkAgent,
     if display:
         game.printBoard(board)
     while True:
+        winrate = None
         if player == 'human':
             pos = list(map(int, input('x y =>').split()))
             if len(pos) != 2:
@@ -35,16 +36,19 @@ def play(game: gobang, player1: PolicyNetworkAgent, player2: PolicyNetworkAgent,
                 print('invalid position')
                 continue
             board = game.play(board, i, j, turn)
-
         else: # AI
-            probs = mct.simulateAndPredict(board * turn, NUM_SIMULATION)
+            probs, Q = mct.simulateAndPredict(board * turn, NUM_SIMULATION, get_reward=True)
             # print(f"debug: probs = {probs}")
             pos = np.argmax(probs)
+            v = Q[pos] # [-1, 1]
+            winrate = (v + 1) * 50
             # print(f"debug: pos = {pos}")
             board = game.play(board, pos // game.boardsize, pos % game.boardsize, turn)
 
         if display:
             game.printBoard(board)
+            if winrate is not None:
+                print(f"winrate: {winrate}%")
         result = game.evaluate(board)
         if result != 0:
             if display:

@@ -15,7 +15,7 @@ class MCTS():
         self.Es = {} # check game result at state s
         self.Vs = {} # valid moves at state s
     
-    def simulateAndPredict(self, state: np.ndarray, NUM_SIMULATION: int):
+    def simulateAndPredict(self, state: np.ndarray, NUM_SIMULATION: int, get_reward=False):
         # print(f"debug: state = {state}")
         s = state.tobytes()
 
@@ -29,7 +29,10 @@ class MCTS():
                 cnt.append(self.Nsa[(s, a)])
         cnt = np.array(cnt)
         #print(self.Nsa.values())
-        return cnt / np.sum(cnt)
+        if get_reward:
+            return cnt / np.sum(cnt), self.Qsa[s]
+        else:
+            return cnt / np.sum(cnt)
     def _run(self, state: np.ndarray):
         s = state.tobytes()
         if s not in self.Es:
