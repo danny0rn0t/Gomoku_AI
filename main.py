@@ -22,7 +22,7 @@ parser.add_argument("--MODEL_SAVE_PATH", type=str, default="checkpoint.ckpt")
 parser.add_argument("--NUM_EPOCH", type=int, default=10)
 parser.add_argument("--BATCHSIZE", type=int, default=8)
 parser.add_argument("--residual_layers", type=int, default=5)
-parser.add_argument("--update_threshold", type=float, default=0.6)
+parser.add_argument("--update_threshold", type=float, default=0.6) # paper: 0.55
 args = parser.parse_args()
 
 if __name__ == '__main__':
@@ -37,6 +37,8 @@ if __name__ == '__main__':
         trainer.train()
     elif args.play:
         assert (args.order == 1 or args.order == 2)
+        if args.NUM_SIMULATION == 160: # default
+            args.NUM_SIMULATION = 1000
         game = gobang(args.boardsize)
         model = ResidualPolicyNetwork(game, num_layers=args.residual_layers)
         model = PolicyNetworkAgent(model, args)

@@ -24,6 +24,7 @@ def play(game: gobang, player1: PolicyNetworkAgent, player2: PolicyNetworkAgent,
         game.printBoard(board)
     while True:
         winrate = None
+        i = j = None
         if player == 'human':
             pos = list(map(int, input('x y =>').split()))
             if len(pos) != 2:
@@ -42,10 +43,12 @@ def play(game: gobang, player1: PolicyNetworkAgent, player2: PolicyNetworkAgent,
             pos = np.argmax(probs)
             winrate = (v + 1) * 50
             # print(f"debug: pos = {pos}")
-            board = game.play(board, pos // game.boardsize, pos % game.boardsize, turn)
+            i = pos // game.boardsize
+            j = pos % game.boardsize
+            board = game.play(board, i, j, turn)
 
         if display:
-            game.printBoard(board)
+            game.printBoard(board, (i, j))
             if winrate is not None:
                 print(f"winrate:{winrate: .2f}%")
         result = game.evaluate(board)

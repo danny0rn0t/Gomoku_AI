@@ -23,7 +23,7 @@ class gobang:
         res = board.copy()
         res[i][j] = player
         return res
-    def printBoard(self, board) -> int:
+    def printBoard(self, board, lastmove=None) -> int:
         print('* ', end='')
         for i in range(self.boardsize):
             print(f'{i + 1}', end='')
@@ -38,7 +38,12 @@ class gobang:
         for i in range(self.boardsize):
             print(f'{i + 1}|', end='')
             for j in range(self.boardsize):
-                if board[i][j] == 0:
+                if lastmove is not None and i == lastmove[0] and j == lastmove[1]:
+                    if board[i][j] == 1:
+                        print('o', end='')
+                    else:
+                        print('x', end='')
+                elif board[i][j] == 0:
                     print('-', end='')
                 elif board[i][j] == 1:
                     print('O', end='')
