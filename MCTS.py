@@ -30,7 +30,9 @@ class MCTS():
         cnt = np.array(cnt)
         #print(self.Nsa.values())
         if get_reward:
-            return cnt / np.sum(cnt), self.Qsa[s]
+            a = np.argmax(cnt)
+            v = self.Qsa[(s, a)]
+            return cnt / np.sum(cnt), v
         else:
             return cnt / np.sum(cnt)
     def _run(self, state: np.ndarray):
