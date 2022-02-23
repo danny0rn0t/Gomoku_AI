@@ -96,6 +96,8 @@ class PolicyNetworkAgent():
         target = DataLoader(target, batch_size=self.args.batchsize, shuffle=True, drop_last=True)
         for epoch in range(self.args.num_epoch):
             self.network.train()
+            total_loss = 0
+            n = 0
             for board, y_pi, y_v in tqdm(target):
                 board = torch.FloatTensor(np.array(board).astype(np.float64)).contiguous().to(self.device)
                 y_pi = torch.FloatTensor(np.array(y_pi).astype(np.float64)).contiguous().to(self.device)
@@ -104,9 +106,12 @@ class PolicyNetworkAgent():
                 X_pi, X_v = self.network(board)
                 # print(f"debug: X_pi.shape = {X_pi.shape}, X_v.shape = {X_v.shape}")
                 loss = self.calcLoss(X_pi, y_pi, X_v, y_v)
+                total_loss += loss
+                n += 1
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
+            print(f"epoch {epoch + 1} | loss: {total_loss / n :.5f}")
     def calcLoss(self, X_pi, y_pi, X_v, y_v):
         l1 = torch.sum((X_v - y_v) ** 2) / y_v.shape[0]
         l2 = torch.sum(y_pi * torch.log(X_pi)) / y_pi.shape[0]
