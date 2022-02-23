@@ -30,11 +30,11 @@ parser.add_argument("--num_epoch", type=int, default=10)
 parser.add_argument("--batchsize", type=int, default=8)
 parser.add_argument("--update_threshold", type=float, default=0.55) # paper: 0.55
 parser.add_argument("--learning_rate", type=int, default=0.0001)
-args = parser.parse_args()
 
 # playing parameters:
 parser.add_argument("-o", "--play_order", type=int, default=2)
 parser.add_argument("-s", "--num_simulation_p", default=1000)
+args = parser.parse_args()
 
 
 if __name__ == '__main__':
