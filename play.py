@@ -26,7 +26,7 @@ def play(game: gobang, player1: PolicyNetworkAgent, player2: PolicyNetworkAgent,
         winrate = None
         i = j = None
         if player == 'human':
-            pos = list(map(int, input('x y =>').split()))
+            pos = list(map(int, input('Your turn, enter x y =>').split()))
             if len(pos) != 2:
                 print('wrong format')
                 continue

@@ -74,17 +74,16 @@ class ResidualPolicyNetwork(nn.Module):
 class PolicyNetworkAgent():
     def __init__(self, network: ResidualPolicyNetwork, args):
         self.network = network
-        self.optimizer = optim.SGD(self.network.parameters(), lr=0.0001, momentum=0.9, weight_decay=0.0001)
+        self.optimizer = optim.SGD(self.network.parameters(), lr=args.learning_rate, momentum=0.9, weight_decay=0.0001)
         self.args = args
         self.boardsize = network.game.boardsize
-        if args.cuda:
-            self.network.cuda()
+        self.device = torch.device(self.args.device)
+        self.network.to(self.device)
     def forward(self, board: np.ndarray):
         # board.shape = (boardsize, boardsize)
         board = torch.FloatTensor(board.astype(np.float64)).contiguous()
-        if self.args.cuda:
-            board = board.cuda()
         board = board.view(1, self.boardsize, self.boardsize)
+        board = board.to(self.device)
         #print(f"DEBUG: board.shape = {board.shape}")
         self.network.eval()
         with torch.no_grad():
@@ -94,19 +93,14 @@ class PolicyNetworkAgent():
         return pi, v
     def learn(self, target):
         target = PolicyGradientNetworkDataset(target)
-        target = DataLoader(target, batch_size=self.args.BATCHSIZE, shuffle=True, drop_last=True)
-        for epoch in range(self.args.NUM_EPOCH):
+        target = DataLoader(target, batch_size=self.args.batchsize, shuffle=True, drop_last=True)
+        for epoch in range(self.args.num_epoch):
             self.network.train()
             for board, y_pi, y_v in tqdm(target):
-                board = torch.FloatTensor(np.array(board).astype(np.float64)).contiguous()
-                y_pi = torch.FloatTensor(np.array(y_pi).astype(np.float64)).contiguous()
-                y_v = torch.FloatTensor(np.array(y_v).astype(np.float64)).contiguous()
+                board = torch.FloatTensor(np.array(board).astype(np.float64)).contiguous().to(self.device)
+                y_pi = torch.FloatTensor(np.array(y_pi).astype(np.float64)).contiguous().to(self.device)
+                y_v = torch.FloatTensor(np.array(y_v).astype(np.float64)).contiguous().to(self.device)
                 # print(f"debug: board.shape = {board.shape}, y_pi.shape = {y_pi.shape}, y_v.shape = {y_v.shape}")
-
-                if self.args.cuda:
-                    board = board.cuda()
-                    y_pi = y_pi.cuda()
-                    y_v = y_v.cuda()
                 X_pi, X_v = self.network(board)
                 # print(f"debug: X_pi.shape = {X_pi.shape}, X_v.shape = {X_v.shape}")
                 loss = self.calcLoss(X_pi, y_pi, X_v, y_v)

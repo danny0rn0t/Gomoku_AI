@@ -26,7 +26,7 @@ class train:
                 for item in trainData:
                     item[2] = item[2] * result
                 return trainData
-            probs = self.mcts.simulateAndPredict(board * turn, self.args.NUM_SIMULATION)
+            probs = self.mcts.simulateAndPredict(board * turn, self.args.num_simulation)
             s = (board * turn).tobytes()
             a = np.random.choice(range(len(probs)), p=probs)
             trainData.append([board * turn, probs, turn])
@@ -34,26 +34,26 @@ class train:
             turn *= (-1)
     
     def train(self):
-        for i in range(self.args.NUM_ITERATION):
+        for i in range(self.args.num_iteration):
             pass
             data = []
-            for _ in tqdm(range(self.args.NUM_EPISODE)):
+            for _ in tqdm(range(self.args.num_episode)):
                 data += self.selfPlay()
-            self.oldModel.save(self.args.MODEL_SAVE_PATH)
-            self.newModel.load(self.args.MODEL_SAVE_PATH)
+            self.oldModel.save(self.args.model_save_path)
+            self.newModel.load(self.args.model_save_path)
             
             self.newModel.learn(data)
             oldWins = newWins = ties = 0
             mct_old = MCTS(self.game, self.oldModel)
             mct_new = MCTS(self.game, self.newModel)
-            for j in tqdm(range(self.args.NUM_GAME_INFERENCE)):
+            for j in tqdm(range(self.args.num_game_inference)):
                 if j % 2 == 0:
-                    result = play(self.game, self.newModel, self.oldModel, self.args.NUM_SIMULATION, mct1=mct_new, mct2=mct_old)
+                    result = play(self.game, self.newModel, self.oldModel, self.args.num_simulation, mct1=mct_new, mct2=mct_old)
                     if result == 1: newWins += 1
                     elif result == -1: oldWins += 1
                     else: ties += 1
                 else:
-                    result = play(self.game, self.oldModel, self.newModel, self.args.NUM_SIMULATION, mct1=mct_old, mct2=mct_new)
+                    result = play(self.game, self.oldModel, self.newModel, self.args.num_simulation, mct1=mct_old, mct2=mct_new)
                     if result == 1: oldWins += 1
                     elif result == -1: newWins += 1
                     else: ties += 1
@@ -61,8 +61,8 @@ class train:
             print(f"iteration: {i} | {newWins} win, {oldWins} loss, {ties} tie |")
             if winrate >= self.args.update_threshold:
                 print("Update new model!")
-                self.newModel.save(self.args.MODEL_SAVE_PATH)
-                self.oldModel.load(self.args.MODEL_SAVE_PATH)
+                self.newModel.save(self.args.model_save_path)
+                self.oldModel.load(self.args.model_save_path)
             else:
                 print("Discard new model!")
 
