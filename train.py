@@ -48,12 +48,12 @@ class train:
             mct_new = MCTS(self.game, self.newModel)
             for j in tqdm(range(self.args.num_game_inference)):
                 if j % 2 == 0:
-                    result = play(self.game, self.newModel, self.oldModel, self.args.num_simulation, mct1=mct_new, mct2=mct_old)
+                    result = play(self.game, self.newModel, self.oldModel, self.args.num_simulation_p, mct1=mct_new, mct2=mct_old)
                     if result == 1: newWins += 1
                     elif result == -1: oldWins += 1
                     else: ties += 1
                 else:
-                    result = play(self.game, self.oldModel, self.newModel, self.args.num_simulation, mct1=mct_old, mct2=mct_new)
+                    result = play(self.game, self.oldModel, self.newModel, self.args.num_simulation_p, mct1=mct_old, mct2=mct_new)
                     if result == 1: oldWins += 1
                     elif result == -1: newWins += 1
                     else: ties += 1
