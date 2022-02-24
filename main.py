@@ -14,7 +14,7 @@ parser.add_argument("--play", action='store_true')
 parser.add_argument("--train", action='store_true')
 parser.add_argument("--device", type=str)
 parser.add_argument("--model_save_path", type=str, default="checkpoint.ckpt")
-parser.add_argument("--num_thread", type=int, choices=range(1, 8) ,default=1)
+parser.add_argument("--num_thread", type=int, choices=range(1, 17) ,default=1)
 
 # game parameters:
 parser.add_argument("--boardsize", type=int, default=9)
