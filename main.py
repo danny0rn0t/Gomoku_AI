@@ -33,7 +33,7 @@ parser.add_argument("--learning_rate", type=int, default=0.0001)
 
 # playing parameters:
 parser.add_argument("-o", "--play_order", type=int, default=2)
-parser.add_argument("-t", "--time_limit", type=float, choice=range(0, 60),default=None)
+parser.add_argument("-t", "--time_limit", type=float, choices=range(0, 60),default=None)
 parser.add_argument("-s", "--num_simulation_p", type=int, default=1000)
 args = parser.parse_args()
 
