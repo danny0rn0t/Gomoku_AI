@@ -5,6 +5,7 @@ from MCTS import MCTS
 from tqdm import tqdm
 from play import play
 from copy import deepcopy
+import threading
 
 class train:
     def __init__(self, game: gobang, model: PolicyNetworkAgent, args):
@@ -14,7 +15,8 @@ class train:
         self.mcts = MCTS(game, self.oldModel)
         self.args = args
         self.trainData = []
-    def selfPlay(self, res: list = None):
+        self.lock = threading.Lock()
+    def selfPlay(self):
         mcts = MCTS(self.game, self.oldModel)
         trainData = [] # [board, action, player{1, -1}]
         board = self.game.getEmptyBoard()
@@ -26,8 +28,6 @@ class train:
                     result = 0
                 for item in trainData:
                     item[2] = item[2] * result
-                if res is not None:
-                    res.extend(trainData)
                 return trainData
             probs = mcts.simulateAndPredict(board * turn, self.args.num_simulation)
             s = (board * turn).tobytes()
@@ -35,13 +35,25 @@ class train:
             trainData.append([board * turn, probs, turn])
             board = self.game.play(board, a // self.game.boardsize, a % self.game.boardsize, turn)
             turn *= (-1)
-    
+    def selfPlayN(self, n, data): # for multithreading
+        res = []
+        for _ in tqdm(range(n)):
+            res.extend(self.selfPlay())
+        self.lock.acquire()
+        data.extend(res)
+        self.lock.release()
     def train(self):
         for i in range(self.args.num_iteration):
             pass
             data = []
-            for _ in tqdm(range(self.args.num_episode)):
-                data += self.selfPlay()
+            threads = []
+            for t in range(self.args.num_thread):
+                threads.append(threading.Thread(target=self.selfPlayN, args=(self.args.num_episode // self.args.num_thread, data)))
+                threads[t].start()
+            for t in range(self.args.num_thread):
+                threads[t].join()
+            # for _ in tqdm(range(self.args.num_episode)):
+            #     data += self.selfPlay()
             self.oldModel.save(self.args.model_save_path)
             self.newModel.load(self.args.model_save_path)
             
