@@ -4,6 +4,7 @@ import math
 from game import gobang
 from policyGradientNetwork import *
 from copy import deepcopy
+import time
 class MCTS():
     def __init__(self, game: gobang, model: PolicyNetworkAgent):
         self.model = model
@@ -15,11 +16,13 @@ class MCTS():
         self.Es = {} # check game result at state s
         self.Vs = {} # valid moves at state s
     
-    def simulateAndPredict(self, state: np.ndarray, NUM_SIMULATION: int, get_reward=False):
+    def simulateAndPredict(self, state: np.ndarray, NUM_SIMULATION: int, get_reward=False, time_limit=None):
         # print(f"debug: state = {state}")
         s = state.tobytes()
-
+        startTime = time.time()
         for i in range(NUM_SIMULATION):
+            if time_limit is not None and (time.time() - startTime > time_limit):
+                break
             self._run(state)
         cnt = []
         for a in range(self.game.boardsize**2):
