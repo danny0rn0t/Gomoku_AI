@@ -39,19 +39,21 @@ class train:
         res = []
         for _ in tqdm(range(n)):
             res.extend(self.selfPlay())
-        self.lock.acquire()
+        # self.lock.acquire()
         data.extend(res)
-        self.lock.release()
+        # self.lock.release()
     def train(self):
         for i in range(self.args.num_iteration):
             pass
             data = []
-            threads = []
+            # threads = []
             for t in range(self.args.num_thread):
-                threads.append(threading.Thread(target=self.selfPlayN, args=(self.args.num_episode // self.args.num_thread, data)))
-                threads[t].start()
+                # threads.append(threading.Thread(target=self.selfPlayN, args=(self.args.num_episode // self.args.num_thread, data)))
+                # threads[t].start()
+                self.selfPlayN(self.args.num_episode, data)
             for t in range(self.args.num_thread):
-                threads[t].join()
+                # threads[t].join()
+                pass
             # for _ in tqdm(range(self.args.num_episode)):
             #     data += self.selfPlay()
             self.oldModel.save(self.args.model_save_path)
