@@ -14,7 +14,8 @@ class train:
         self.mcts = MCTS(game, self.oldModel)
         self.args = args
         self.trainData = []
-    def selfPlay(self):
+    def selfPlay(self, res: list = None):
+        mcts = MCTS(self.game, self.oldModel)
         trainData = [] # [board, action, player{1, -1}]
         board = self.game.getEmptyBoard()
         turn = 1
@@ -25,8 +26,10 @@ class train:
                     result = 0
                 for item in trainData:
                     item[2] = item[2] * result
+                if res is not None:
+                    res.extend(trainData)
                 return trainData
-            probs = self.mcts.simulateAndPredict(board * turn, self.args.num_simulation)
+            probs = mcts.simulateAndPredict(board * turn, self.args.num_simulation)
             s = (board * turn).tobytes()
             a = np.random.choice(range(len(probs)), p=probs)
             trainData.append([board * turn, probs, turn])
