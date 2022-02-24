@@ -33,8 +33,7 @@ parser.add_argument("--learning_rate", type=int, default=0.0001)
 
 # playing parameters:
 parser.add_argument("-o", "--play_order", type=int, default=2)
-parser.add_argument("-t", "--time_limit", type=float, choices=range(0, 60),default=None)
-parser.add_argument("-s", "--num_simulation_p", type=int, default=1000)
+parser.add_argument("-t", "--time_limit", type=float, choices=range(0, 60),default=5) # time limit for each move
 args = parser.parse_args()
 
 
@@ -61,9 +60,9 @@ if __name__ == '__main__':
         model = PolicyNetworkAgent(model, args)
         model.load(args.model_save_path)
         if args.play_order == 1:
-            play(game, 'human', model, args.num_simulation_p, display=True, time_limit=args.time_limit)
+            play(game, 'human', model, args.num_simulation, display=True, time_limit=args.time_limit)
         else:
-            play(game, model, 'human', args.num_simulation_p, display=True, time_limit=args.time_limit)
+            play(game, model, 'human', args.num_simulation, display=True, time_limit=args.time_limit)
 
 
 

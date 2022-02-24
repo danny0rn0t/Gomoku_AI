@@ -19,11 +19,13 @@ class MCTS():
     def simulateAndPredict(self, state: np.ndarray, NUM_SIMULATION: int, get_reward=False, time_limit=None):
         # print(f"debug: state = {state}")
         s = state.tobytes()
-        startTime = time.time()
-        for i in range(NUM_SIMULATION):
-            if time_limit is not None and (time.time() - startTime > time_limit):
-                break
-            self._run(state)
+        if time_limit is not None:
+            startTime = time.time()
+            while time.time() - startTime < time_limit:
+                self._run(state)
+        else:
+            for i in range(NUM_SIMULATION):
+                self._run(state)
         cnt = []
         for a in range(self.game.boardsize**2):
             if (s, a) not in self.Nsa:
