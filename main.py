@@ -61,9 +61,9 @@ if __name__ == '__main__':
         model = PolicyNetworkAgent(model, args)
         model.load(args.model_save_path)
         if args.play_order == 1:
-            play(game, 'human', model, args.num_simulation_p, display=True)
+            play(game, 'human', model, args.num_simulation_p, display=True, time_limit=args.time_limit)
         else:
-            play(game, model, 'human', args.num_simulation_p, display=True)
+            play(game, model, 'human', args.num_simulation_p, display=True, time_limit=args.time_limit)
 
 
 

@@ -38,7 +38,7 @@ def play(game: gobang, player1: PolicyNetworkAgent, player2: PolicyNetworkAgent,
                 continue
             board = game.play(board, i, j, turn)
         else: # AI
-            probs, v = mct.simulateAndPredict(board * turn, NUM_SIMULATION, get_reward=True, time_limit=args.time_limit)
+            probs, v = mct.simulateAndPredict(board * turn, NUM_SIMULATION, get_reward=True, time_limit=time_limit)
             # print(f"debug: probs = {probs}")
             pos = np.argmax(probs)
             winrate = (v + 1) * 50
