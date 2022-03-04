@@ -21,6 +21,8 @@ class train:
         trainData = [] # [board, action, player{1, -1}]
         board = self.game.getEmptyBoard()
         turn = 1
+        is_root = True
+        moveCnt = 0
         while True:
             result = self.game.evaluate(board)
             if result != 0: # game ended
@@ -29,12 +31,17 @@ class train:
                 for item in trainData:
                     item[2] = item[2] * result
                 return trainData
-            probs = mcts.simulateAndPredict(board * turn, self.args.num_simulation)
+            probs = mcts.simulateAndPredict(board * turn, self.args.num_simulation, is_root)
+            is_root = False
             s = (board * turn).tobytes()
-            a = np.random.choice(range(len(probs)), p=probs)
+            if moveCnt < 15:
+                a = np.random.choice(range(len(probs)), p=probs)
+            else:
+                a = np.argmax(probs)
             trainData.append([board * turn, probs, turn])
             board = self.game.play(board, a // self.game.boardsize, a % self.game.boardsize, turn)
             turn *= (-1)
+            moveCnt += 1
     def selfPlayN(self, n, data): # for multithreading
         res = []
         for _ in tqdm(range(n)):

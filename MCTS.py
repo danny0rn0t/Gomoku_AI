@@ -4,28 +4,38 @@ import math
 from game import gobang
 from policyGradientNetwork import *
 from copy import deepcopy
+from collections import defaultdict
 import time
+from torch.distributions.dirichlet import Dirichlet
 class MCTS():
     def __init__(self, game: gobang, model: PolicyNetworkAgent):
         self.model = model
         self.game = game
-        self.Qsa = {} # expected reward for taking action a from state s
-        self.Nsa = {} # number of time taking action a from state s
-        self.Ns = {} # number of time state s was visited 
-        self.Ps = {} # policy output (probs) of neural network from state s
-        self.Es = {} # check game result at state s
-        self.Vs = {} # valid moves at state s
+
+        # adding Dirichlet noise to the root node for additional exploration
+        self.alpha = 0.03
+        self.epsilon = 0.25
+        self.Dir_noise = Dirichlet(torch.Tensor([self.alpha for _ in range(self.game.boardsize**2)]))
+
+        self.Nsa = defaultdict(int) # action visit count
+        self.Ns = defaultdict(int) # state visit count
+        self.Wsa = defaultdict(int) # total action value
+        self.Qsa = defaultdict(int) # mean action value
+        
+        self.Ps = defaultdict(int) # policy output (probs) of neural network from state s
+        self.Es = defaultdict(int) # check game result at state s
+        self.Vs = defaultdict(int) # valid moves at state s
     
-    def simulateAndPredict(self, state: np.ndarray, NUM_SIMULATION: int, get_reward=False, time_limit=None):
-        # print(f"debug: state = {state}")
+    def simulateAndPredict(self, state: np.ndarray, NUM_SIMULATION: int, get_reward=False, time_limit=None, is_root=False):
+        # is_root is True if the board (state) is empty
         s = state.tobytes()
         if time_limit is not None:
             startTime = time.time()
             while time.time() - startTime < time_limit:
-                self._run(state)
+                self.run(state, is_root)
         else:
             for i in range(NUM_SIMULATION):
-                self._run(state)
+                self.run(state, is_root)
         cnt = []
         for a in range(self.game.boardsize**2):
             if (s, a) not in self.Nsa:
@@ -40,7 +50,7 @@ class MCTS():
             return cnt / np.sum(cnt), v
         else:
             return cnt / np.sum(cnt)
-    def _run(self, state: np.ndarray):
+    def run(self, state: np.ndarray, is_root=False):
         s = state.tobytes()
         if s not in self.Es:
             self.Es[s] = self.game.evaluate(state)
@@ -49,54 +59,45 @@ class MCTS():
                 return 0
             return -self.Es[s]
         
+        # expand
         if s not in self.Ps:
-            pi, v = self.model.forward(state)
-            
-            validMoves = self.game.getValidMoves(state)
-            pi *= validMoves
-            # print(f"debug: pi = {pi}, v = {v}")
-            if np.sum(pi) <= 0:
-                pi = pi + validMoves
-            pi /= np.sum(pi)
-
-
-            self.Ps[s] = pi
-            self.Vs[s] = validMoves
-            self.Ns[s] = 0
+            v = self.expand(s, state, is_root)
             return -v
-        
-        validMoves = self.Vs[s]
-        bestScore = -float('inf')
-        bestMove = None
 
-        for a in range(self.game.boardsize**2):
-            if not validMoves[a]:
-                continue
-            if (s, a) in self.Qsa:
-                u = self.Qsa[(s, a)] + 1 * self.Ps[s][a] * math.sqrt(self.Ns[s]) / (1 + self.Nsa[(s, a)])
-            else:
-                u = 1 * self.Ps[s][a] * math.sqrt(self.Ns[s] + 1e-8)
-            if u > bestScore:
-                bestScore = u
-                bestMove = a
-
-        a = bestMove
-        
-        nxtState = self.game.play(state, bestMove // self.game.boardsize, bestMove % self.game.boardsize)
+        # select
+        a = self.select(s)
+        nxtState = self.game.play(state, a // self.game.boardsize, a % self.game.boardsize)
         nxtState = nxtState * (-1) # switch to the perspective of the other player
         v = self._run(nxtState)
 
-        if (s, a) in self.Qsa:
-            self.Qsa[(s, a)] = (self.Nsa[(s, a)] * self.Qsa[(s, a)] + v) / (self.Nsa[(s, a)] + 1)
-            self.Nsa[(s, a)] += 1
-
-        else:
-            self.Qsa[(s, a)] = v
-            self.Nsa[(s, a)] = 1
-        
+        # backup
         self.Ns[s] += 1
+        self.Nsa[(s, a)] += 1
+        self.Wsa[(s, a)] += v
+        self.Qsa[(s, a)] = self.Wsa[(s, a)] / self.Nsa[(s, a)]
+
         return -v
+    def select(self, s, c_puct: int=1) -> int:
+        bestMove = None
+        bestScore = None
+        for a in range(self.game.boardsize**2):
+            if not self.Vs[s][a]: continue
+            u = self.Qsa[(s, a)] + c_puct * self.Ps[s][a] * math.sqrt(self.Ns[s]) / (1 + self.Nsa[(s, a)])
+            if bestScore is None or u > bestScore:
+                bestScore = u
+                bestMove = a
+        return bestMove
+    def expand(self, s, state, is_root=False) -> int:
+        pi, v = self.model.forward(state)
+        validMoves = self.game.getValidMoves(state)
+        if is_root: # adding Dirichlet noise for additional exploration
+            pi = (1 - self.epsilon) * pi + self.epsilon * (self.Dir_noise().numpy())
+        pi *= validMoves
+        if np.sum(pi) <= 0:
+            pi = pi + validMoves
+        pi /= np.sum(pi)
+        self.Ps[s] = pi
+        self.Vs[s] = validMoves
+        return v
 
-
-            
 
