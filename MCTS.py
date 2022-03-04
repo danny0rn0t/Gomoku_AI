@@ -68,7 +68,7 @@ class MCTS():
         a = self.select(s)
         nxtState = self.game.play(state, a // self.game.boardsize, a % self.game.boardsize)
         nxtState = nxtState * (-1) # switch to the perspective of the other player
-        v = self._run(nxtState)
+        v = self.run(nxtState)
 
         # backup
         self.Ns[s] += 1
