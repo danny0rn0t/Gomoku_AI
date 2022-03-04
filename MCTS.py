@@ -91,7 +91,7 @@ class MCTS():
         pi, v = self.model.forward(state)
         validMoves = self.game.getValidMoves(state)
         if is_root: # adding Dirichlet noise for additional exploration
-            pi = (1 - self.epsilon) * pi + self.epsilon * (self.Dir_noise().numpy())
+            pi = (1 - self.epsilon) * pi + self.epsilon * (self.Dir_noise.sample().numpy())
         pi *= validMoves
         if np.sum(pi) <= 0:
             pi = pi + validMoves
