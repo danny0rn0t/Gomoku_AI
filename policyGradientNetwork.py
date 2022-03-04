@@ -134,66 +134,7 @@ class PolicyNetworkAgent():
         return 0
 
 
-'''
-class PolicyNetwork(nn.Module):
-    def __init__(self, game: gobang):
-        super().__init__()
-        self.boardsize = game.boardsize
-        self.conv1 = nn.Conv2d(1, 512, 3, 1, 1)
-        self.conv2 = nn.Conv2d(512, 512, 3, 1, 1)
-        self.conv3 = nn.Conv2d(512, 512, 3, 1)
-        self.conv4 = nn.Conv2d(512, 512, 3, 1)
-    
-        self.bn2d = nn.BatchNorm2d(512)
-        self.bn1d1 = nn.BatchNorm1d(1024)
-        self.bn1d2 = nn.BatchNorm1d(512)
 
-        self.fc1 = nn.Linear(512 * (self.boardsize - 4) * (self.boardsize - 4), 1024)
-        self.fc2 = nn.Linear(1024, 512)
-        self.fc3 = nn.Linear(512, self.boardsize * self.boardsize)
-        self.fc4 = nn.Linear(512, 1)    
-    def forward(self, x):
-        x = x.view(-1, 1, self.boardsize, self.boardsize)
-        
-        x = self.conv1(x)
-        x = self.bn2d(x)
-        x = nn.ReLU()(x)
-
-        x = self.conv2(x)
-        x = self.bn2d(x)
-        x = nn.ReLU()(x)
-
-        x = self.conv3(x)
-        x = self.bn2d(x)
-        x = nn.ReLU()(x)
-
-        x = self.conv4(x)
-        x = self.bn2d(x)
-        x = nn.ReLU()(x)
-
-        x = x.view(-1, 512 * (self.boardsize - 4) * (self.boardsize - 4))
-
-        x = self.fc1(x)
-        x = self.bn1d1(x)
-        x = nn.ReLU()(x)
-        x = nn.Dropout(0.3, inplace=True)(x)
-
-        x = self.fc2(x)
-        x = self.bn1d2(x)
-        x = nn.ReLU()(x)
-        x = nn.Dropout(0.3, inplace=True)(x)
-
-        pi = v = x
-
-        pi = self.fc3(pi)
-        pi = nn.functional.log_softmax(pi, dim=1)
-        #pi = nn.exp(pi)
-
-        v = self.fc4(v)
-        v = nn.Tanh()(v)
-
-        return torch.exp(pi), v
-'''    
     
 
 
