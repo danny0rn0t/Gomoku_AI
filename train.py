@@ -31,8 +31,8 @@ class train:
                 for item in trainData:
                     item[2] = item[2] * result
                 return trainData
-            probs = mcts.simulateAndPredict(board * turn, self.args.num_simulation, is_root)
-            print(probs)
+            probs = mcts.simulateAndPredict(board * turn, self.args.num_simulation, is_root=is_root)
+            #print(probs)
             is_root = False
             s = (board * turn).tobytes()
             if moveCnt < 15:
