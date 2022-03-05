@@ -39,33 +39,17 @@ args = parser.parse_args()
 
 
 if __name__ == '__main__':
-    if args.train and args.play:
-        print("One work at a time!")
-        exit(0)
-    if not args.train and not args.play:
-        print("No work was assigned!")
-        exit(0)
-    if args.device is None:
-        args.device = "cuda" if torch.cuda.is_available() else "cpu"
-    if args.train:
-        game = gobang(args.boardsize)
-        model = ResidualPolicyNetwork(game, num_layers=args.residual_layers)
-        model = PolicyNetworkAgent(model, args)
-        model.load(args.model_save_path)
-        trainer = train(game, model, args)
-        trainer.train()
-    elif args.play: # play
-        assert (args.play_order == 1 or args.play_order == 2)
-        game = gobang(args.boardsize)
-        model = ResidualPolicyNetwork(game, num_layers=args.residual_layers)
-        model = PolicyNetworkAgent(model, args)
-        model.load(args.model_save_path)
-        if args.play_order == 1:
-            play(game, 'human', model, args.num_simulation, display=True, time_limit=args.time_limit)
-        else:
-            play(game, model, 'human', args.num_simulation, display=True, time_limit=args.time_limit)
-
-
-
+    game = gobang(args.boardsize)
+    model = ResidualPolicyNetwork(game, num_layers=args.residual_layers)
+    model = PolicyNetworkAgent(model, args)
+    model.load(args.model_save_path)
+    initState = game.getEmptyBoard()
+    probs = model.forward(initState)
+    idx = 0
+    for i in range(args.boardsize):
+        for j in range(args.boardsize):
+            print(f"{probs[idx]: .5f}", end=' ')
+            idx += 1
+        print()
 
 
