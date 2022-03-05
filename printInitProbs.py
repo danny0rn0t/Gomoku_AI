@@ -46,7 +46,7 @@ if __name__ == '__main__':
     model = PolicyNetworkAgent(model, args)
     model.load(args.model_save_path)
     initState = game.getEmptyBoard()
-    probs = model.forward(initState).tolist()
+    probs, _ = model.forward(initState)
     idx = 0
     for i in range(args.boardsize):
         for j in range(args.boardsize):
