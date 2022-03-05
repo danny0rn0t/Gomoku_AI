@@ -15,11 +15,7 @@ def play(game: gobang, player1: PolicyNetworkAgent, player2: PolicyNetworkAgent,
     player = player1
     mct = mct1
     turn = 1
-    '''
-    win condition:
-    | prev turn | cur turn | result | final result |
-    |     1     |    -1    |    1   |       
-    '''
+
     if display:
         game.printBoard(board)
     while True:
