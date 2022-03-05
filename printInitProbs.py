@@ -39,12 +39,14 @@ args = parser.parse_args()
 
 
 if __name__ == '__main__':
+    if args.device is None:
+        args.device = "cuda" if torch.cuda.is_available() else "cpu"
     game = gobang(args.boardsize)
     model = ResidualPolicyNetwork(game, num_layers=args.residual_layers)
     model = PolicyNetworkAgent(model, args)
     model.load(args.model_save_path)
     initState = game.getEmptyBoard()
-    probs = model.forward(initState)
+    probs = model.forward(initState).tolist()
     idx = 0
     for i in range(args.boardsize):
         for j in range(args.boardsize):
