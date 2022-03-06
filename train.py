@@ -35,7 +35,7 @@ class train:
             #print(probs)
             is_root = False
             s = (board * turn).tobytes()
-            if moveCnt < 15:
+            if moveCnt < 10:
                 a = np.random.choice(range(len(probs)), p=probs)
             else:
                 a = np.argmax(probs)
@@ -67,16 +67,16 @@ class train:
             
             self.newModel.learn(data)
             oldWins = newWins = ties = 0
-            mct_old = MCTS(self.game, self.oldModel)
-            mct_new = MCTS(self.game, self.newModel)
+            # mct_old = MCTS(self.game, self.oldModel)
+            # mct_new = MCTS(self.game, self.newModel)
             for j in tqdm(range(self.args.num_game_inference)):
                 if j % 2 == 0:
-                    result = play(self.game, self.newModel, self.oldModel, self.args.num_simulation, mct1=mct_new, mct2=mct_old)
+                    result = play(self.game, self.newModel, self.oldModel, self.args.num_simulation, mct1=None, mct2=None)
                     if result == 1: newWins += 1
                     elif result == -1: oldWins += 1
                     else: ties += 1
                 else:
-                    result = play(self.game, self.oldModel, self.newModel, self.args.num_simulation, mct1=mct_old, mct2=mct_new)
+                    result = play(self.game, self.oldModel, self.newModel, self.args.num_simulation, mct1=None, mct2=None)
                     if result == 1: oldWins += 1
                     elif result == -1: newWins += 1
                     else: ties += 1

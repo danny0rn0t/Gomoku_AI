@@ -7,6 +7,7 @@ from copy import deepcopy
 from collections import defaultdict
 import time
 from torch.distributions.dirichlet import Dirichlet
+import random
 class MCTS():
     def __init__(self, game: gobang, model: PolicyNetworkAgent):
         self.model = model
@@ -88,7 +89,13 @@ class MCTS():
                 bestMove = a
         return bestMove
     def expand(self, s, state, is_root=False) -> int:
-        pi, v = self.model.forward(state)
+        # random rotate and flip
+        seed = random.randint(0, 15)
+        pi, v = self.model.forward(self.rotateAndReflect(state, seed))
+        pi = np.reshape(pi, (self.game.boardsize, self.game.boardsize))
+        pi = self.rotateAndReflectComplement(pi, seed)
+        pi = np.reshape(pi, self.game.boardsize**2)
+        
         validMoves = self.game.getValidMoves(state)
         if is_root: # adding Dirichlet noise for additional exploration
             pi = (1 - self.epsilon) * pi + self.epsilon * (self.Dir_noise.sample().numpy())
@@ -99,5 +106,24 @@ class MCTS():
         self.Ps[s] = pi
         self.Vs[s] = validMoves
         return v
-
-
+    def rotateAndReflect(self, board: np.ndarray, seed: int):
+        # generate symmetries of board
+        assert (0 <= seed < 16)
+        rotate = seed >> 2
+        for i in range(rotate):
+            board = np.rot90(board)
+        if seed & 0b0010:
+            board = np.fliplr(board)
+        if seed & 0b0001:
+            board = np.flipud(board)
+        return board
+    def rotateAndReflectComplement(self, board: np.ndarray, seed: int):
+        assert (0<= seed < 16)
+        rotate = 4 - (seed >> 2)
+        for i in range(rotate):
+            board = np.rot90(board)
+        if seed & 0b0010:
+            board = np.fliplr(board)
+        if seed & 0b0001:
+            board = np.flipud(board)
+        return board
