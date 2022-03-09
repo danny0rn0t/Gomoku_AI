@@ -12,7 +12,7 @@ class train:
         self.oldModel = model
         self.newModel = PolicyNetworkAgent(ResidualPolicyNetwork(game, args.residual_layers), args)
         self.game = game
-        self.mcts = MCTS(game, self.oldModel)
+        self.mcts = MCTS(game, self.oldModel, args)
         self.args = args
         self.trainData = []
         self.lock = threading.Lock()
@@ -71,12 +71,12 @@ class train:
             # mct_new = MCTS(self.game, self.newModel)
             for j in tqdm(range(self.args.num_game_inference)):
                 if j % 2 == 0:
-                    result = play(self.game, self.newModel, self.oldModel, self.args.num_simulation, mct1=None, mct2=None)
+                    result = play(self.game, self.newModel, self.oldModel, self.args.num_simulation, self.args, mct1=None, mct2=None)
                     if result == 1: newWins += 1
                     elif result == -1: oldWins += 1
                     else: ties += 1
                 else:
-                    result = play(self.game, self.oldModel, self.newModel, self.args.num_simulation, mct1=None, mct2=None)
+                    result = play(self.game, self.oldModel, self.newModel, self.args.num_simulation, self.args, mct1=None, mct2=None)
                     if result == 1: oldWins += 1
                     elif result == -1: newWins += 1
                     else: ties += 1

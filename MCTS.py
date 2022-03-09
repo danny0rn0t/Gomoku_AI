@@ -9,13 +9,12 @@ import time
 from torch.distributions.dirichlet import Dirichlet
 import random
 class MCTS():
-    def __init__(self, game: gobang, model: PolicyNetworkAgent):
+    def __init__(self, game: gobang, model: PolicyNetworkAgent, args):
         self.model = model
         self.game = game
+        self.args = args
 
         # adding Dirichlet noise to the root node for additional exploration
-        self.alpha = 0.03
-        self.epsilon = 0.25
         self.Dir_noise = Dirichlet(torch.Tensor([self.alpha for _ in range(self.game.boardsize**2)]))
 
         self.Nsa = defaultdict(int) # action visit count
@@ -78,12 +77,12 @@ class MCTS():
         self.Qsa[(s, a)] = self.Wsa[(s, a)] / self.Nsa[(s, a)]
 
         return -v
-    def select(self, s, c_puct: int=1) -> int:
+    def select(self, s) -> int:
         bestMove = None
         bestScore = None
         for a in range(self.game.boardsize**2):
             if not self.Vs[s][a]: continue
-            u = self.Qsa[(s, a)] + c_puct * self.Ps[s][a] * math.sqrt(self.Ns[s]) / (1 + self.Nsa[(s, a)])
+            u = self.Qsa[(s, a)] + self.args.c_puct * self.Ps[s][a] * math.sqrt(self.Ns[s]) / (1 + self.Nsa[(s, a)])
             if bestScore is None or u > bestScore:
                 bestScore = u
                 bestMove = a
@@ -98,7 +97,7 @@ class MCTS():
         
         validMoves = self.game.getValidMoves(state)
         if is_root: # adding Dirichlet noise for additional exploration
-            pi = (1 - self.epsilon) * pi + self.epsilon * (self.Dir_noise.sample().numpy())
+            pi = (1 - self.args.epsilon) * pi + self.args.epsilon * (self.Dir_noise.sample().numpy())
         pi *= validMoves
         if np.sum(pi) <= 0:
             pi = pi + validMoves
