@@ -15,7 +15,7 @@ class MCTS():
         self.args = args
 
         # adding Dirichlet noise to the root node for additional exploration
-        self.Dir_noise = Dirichlet(torch.Tensor([self.alpha for _ in range(self.game.boardsize**2)]))
+        self.Dir_noise = Dirichlet(torch.Tensor([self.args.alpha for _ in range(self.game.boardsize**2)]))
 
         self.Nsa = defaultdict(int) # action visit count
         self.Ns = defaultdict(int) # state visit count
