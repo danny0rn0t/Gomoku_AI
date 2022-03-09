@@ -17,7 +17,7 @@ class train:
         self.trainData = []
         self.lock = threading.Lock()
     def selfPlay(self):
-        mcts = MCTS(self.game, self.oldModel)
+        mcts = MCTS(self.game, self.oldModel, self.args)
         trainData = [] # [board, action, player{1, -1}]
         board = self.game.getEmptyBoard()
         turn = 1
