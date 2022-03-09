@@ -6,8 +6,7 @@ from tqdm import tqdm
 from play import play
 from copy import deepcopy
 import threading
-from multiprocessing import Process, Manager
-import torch
+
 
 class train:
     def __init__(self, game: gobang, model: PolicyNetworkAgent, args):
@@ -18,7 +17,6 @@ class train:
         self.args = args
         self.trainData = []
         self.lock = threading.Lock()
-        torch.multiprocessing.set_start_method('spawn')
     def selfPlay(self):
         mcts = MCTS(self.game, self.oldModel, self.args)
         trainData = [] # [board, action, player{1, -1}]
@@ -46,21 +44,19 @@ class train:
             board = self.game.play(board, a // self.game.boardsize, a % self.game.boardsize, turn)
             turn *= (-1)
             moveCnt += 1
-    def selfPlayN(self, n, data, lock): # for multithreading
+    def selfPlayN(self, n, data): # for multithreading
         res = []
         for _ in tqdm(range(n)):
             res.extend(self.selfPlay())
-        lock.acquire()
+        self.lock.acquire()
         data.append(res)
-        lock.release()
+        self.lock.release()
     def train(self):
         for i in range(self.args.num_iteration):
-            manager = Manager()
-            lock = manager.Lock()
-            data = manager.list()
+            data = []
             threads = []
             for t in range(self.args.num_thread):
-                threads.append(Process(target=self.selfPlayN, args=(self.args.num_episode // self.args.num_thread, data, lock)))
+                threads.append(threading.Thread(target=self.selfPlayN, args=(self.args.num_episode // self.args.num_thread, data)))
                 threads[t].start()
             for t in range(self.args.num_thread):
                 threads[t].join()
