@@ -13,7 +13,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--play", action='store_true')
 parser.add_argument("--train", action='store_true')
 parser.add_argument("--device", type=str)
-parser.add_argument("--model_save_path", type=str, default="checkpoint.ckpt")
+parser.add_argument("--model_save_path", type=str)
 parser.add_argument("--num_thread", type=int, choices=range(1, 17) ,default=1)
 
 # game parameters:
@@ -35,12 +35,22 @@ parser.add_argument("--learning_rate", type=float, default=0.0001)
 # playing parameters:
 parser.add_argument("-o", "--play_order", type=int, default=2)
 parser.add_argument("-t", "--time_limit", type=float, choices=range(0, 60),default=5) # time limit for each move
+
+# MCTS parameters:
+parser.add_argument("--epsilon", type=float, default=0.25) # dirichlet noise
+parser.add_argument("--alpha", type=float) # dirichlet noise
+parser.add_argument("--c_puct", type=float, default=4) # origin paper := 1
+
 args = parser.parse_args()
 
 
 if __name__ == '__main__':
     if args.device is None:
         args.device = "cuda" if torch.cuda.is_available() else "cpu"
+    if args.model_save_path is None:
+        args.model_save_path = f"gobang{args.boardsize}x{args.boardsize}_{args.residual_layers}L.ckpt"
+    if args.alpha is None:
+        args.alpha = 10 / ((args.boardsize**2)/2)
     game = gobang(args.boardsize)
     model = ResidualPolicyNetwork(game, num_layers=args.residual_layers)
     model = PolicyNetworkAgent(model, args)
