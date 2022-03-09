@@ -7,6 +7,7 @@ from play import play
 from copy import deepcopy
 import threading
 from multiprocessing import Process, Manager
+import torch
 
 class train:
     def __init__(self, game: gobang, model: PolicyNetworkAgent, args):
@@ -17,6 +18,7 @@ class train:
         self.args = args
         self.trainData = []
         self.lock = threading.Lock()
+        torch.multiprocessing.set_start_method('spawn')
     def selfPlay(self):
         mcts = MCTS(self.game, self.oldModel, self.args)
         trainData = [] # [board, action, player{1, -1}]
