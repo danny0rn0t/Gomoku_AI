@@ -29,10 +29,13 @@ class MCTS():
     def simulateAndPredict(self, state: np.ndarray, NUM_SIMULATION: int, get_reward=False, time_limit=None, is_root=False):
         # is_root is True if the board (state) is empty
         s = state.tobytes()
+        totalSimulation = NUM_SIMULATION
         if time_limit is not None:
+            totalSimulation = 0
             startTime = time.time()
             while time.time() - startTime < time_limit:
                 self.run(state, is_root)
+                totalSimulation += 1
         else:
             for i in range(NUM_SIMULATION):
                 self.run(state, is_root)
@@ -47,7 +50,7 @@ class MCTS():
         if get_reward:
             a = np.argmax(cnt)
             v = self.Qsa[(s, a)]
-            return cnt / np.sum(cnt), v
+            return cnt / np.sum(cnt), v, totalSimulation
         else:
             return cnt / np.sum(cnt)
     def run(self, state: np.ndarray, is_root=False):
