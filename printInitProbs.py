@@ -21,6 +21,7 @@ parser.add_argument("--boardsize", type=int, default=9)
 
 # policy network architecture parameters:
 parser.add_argument("--residual_layers", type=int, default=5) # paper: 20
+parser.add_argument("--feature", type=int, default=256)
 
 # training parameters:
 parser.add_argument("--num_iteration", type=int, default=1000)
@@ -48,7 +49,10 @@ if __name__ == '__main__':
     if args.device is None:
         args.device = "cuda" if torch.cuda.is_available() else "cpu"
     if args.model_save_path is None:
-        args.model_save_path = f"gobang{args.boardsize}x{args.boardsize}_{args.residual_layers}L.ckpt"
+        if args.feature == 256:
+            args.model_save_path = f"gobang{args.boardsize}x{args.boardsize}_{args.residual_layers}L.ckpt"
+        else:
+            args.model_save_path = f"gobang{args.boardsize}x{args.boardsize}_{args.residual_layers}L_{args.feature}F.ckpt"
     if args.alpha is None:
         args.alpha = 10 / ((args.boardsize**2)/2)
     game = gobang(args.boardsize)
