@@ -11,7 +11,7 @@ import threading
 class train:
     def __init__(self, game: gobang, model: PolicyNetworkAgent, args):
         self.oldModel = model
-        self.newModel = PolicyNetworkAgent(ResidualPolicyNetwork(game, args.residual_layers), args)
+        self.newModel = PolicyNetworkAgent(ResidualPolicyNetwork(game, args.residual_layers, args.feature), args)
         self.game = game
         self.mcts = MCTS(game, self.oldModel, args)
         self.args = args
@@ -49,7 +49,7 @@ class train:
         for _ in tqdm(range(n)):
             res.extend(self.selfPlay())
         self.lock.acquire()
-        data.append(res)
+        data.extend(res)
         self.lock.release()
     def train(self):
         for i in range(self.args.num_iteration):
@@ -60,10 +60,6 @@ class train:
                 threads[t].start()
             for t in range(self.args.num_thread):
                 threads[t].join()
-            lsts = []
-            for lst in data:
-                lsts.extend(lst)
-            data = lsts
             # for _ in tqdm(range(self.args.num_episode)):
             #     data += self.selfPlay()
             self.oldModel.save(self.args.model_save_path)

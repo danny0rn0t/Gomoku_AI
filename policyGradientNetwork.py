@@ -8,12 +8,12 @@ from dataset import PolicyGradientNetworkDataset
 import numpy as np
 
 class _ResidualBlock(nn.Module):
-    def __init__(self, in_channels, out_channels):
+    def __init__(self, in_channels, out_channels, feature):
         super(_ResidualBlock, self).__init__()
-        self.conv1 = nn.Conv2d(in_channels, 256, 3, 1, 1)
-        self.bn1 = nn.BatchNorm2d(256)
+        self.conv1 = nn.Conv2d(in_channels, feature, 3, 1, 1)
+        self.bn1 = nn.BatchNorm2d(feature)
         self.act1 = nn.ReLU()
-        self.conv2 = nn.Conv2d(256, out_channels, 3, 1, 1)
+        self.conv2 = nn.Conv2d(feature, out_channels, 3, 1, 1)
         self.bn2 = nn.BatchNorm2d(out_channels)
         self.act2 = nn.ReLU()
     def forward(self, x):
@@ -29,21 +29,21 @@ class _ResidualBlock(nn.Module):
         return x
 
 class ResidualPolicyNetwork(nn.Module):
-    def __init__(self, game: gobang, num_layers=20):
+    def __init__(self, game: gobang, num_layers=20, feature=256):
         super(ResidualPolicyNetwork, self).__init__()
         self.game = game
         self.convNet1 = nn.Sequential(
-            nn.Conv2d(1, 256, 3, 1, 1),
-            nn.BatchNorm2d(256),
+            nn.Conv2d(1, feature, 3, 1, 1),
+            nn.BatchNorm2d(feature),
             nn.ReLU()
         )
         layers = []
         for i in range(num_layers):
-            layers.append(_ResidualBlock(256, 256))
+            layers.append(_ResidualBlock(feature, feature, feature))
         self.residualBlocks = nn.Sequential(*layers)
         self.piHead = nn.Sequential(
             # pi.shape = N * 256 * bs * bs
-            nn.Conv2d(256, 2, 1, 1), # N * 2 * bs * bs
+            nn.Conv2d(feature, 2, 1, 1), # N * 2 * bs * bs
             nn.BatchNorm2d(2),
             nn.ReLU(),
             nn.Flatten(),
@@ -52,13 +52,13 @@ class ResidualPolicyNetwork(nn.Module):
         )
         self.vHead = nn.Sequential(
             # v.shape = N * 256 * bs * bs
-            nn.Conv2d(256, 1, 1, 1), # N * 1 * bs * bs
+            nn.Conv2d(feature, 1, 1, 1), # N * 1 * bs * bs
             nn.BatchNorm2d(1),
             nn.ReLU(),
             nn.Flatten(),
-            nn.Linear(self.game.boardsize * self.game.boardsize, 256),
+            nn.Linear(self.game.boardsize * self.game.boardsize, feature),
             nn.ReLU(),
-            nn.Linear(256, 1),
+            nn.Linear(feature, 1),
             nn.Tanh()
         )
     def forward(self, x):

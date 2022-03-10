@@ -52,7 +52,7 @@ if __name__ == '__main__':
     if args.alpha is None:
         args.alpha = 10 / ((args.boardsize**2)/2)
     game = gobang(args.boardsize)
-    model = ResidualPolicyNetwork(game, num_layers=args.residual_layers)
+    model = ResidualPolicyNetwork(game, num_layers=args.residual_layers, feature=args.feature)
     model = PolicyNetworkAgent(model, args)
     model.load(args.model_save_path)
     initState = game.getEmptyBoard()
