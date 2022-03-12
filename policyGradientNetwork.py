@@ -69,6 +69,7 @@ class ResidualPolicyNetwork(nn.Module):
         pi = self.piHead(x)
         v = self.vHead(x)
         print(f"flag1: {pi.shape}, {v.shape}")
+        raise
         return torch.exp(pi), v
 
 class PolicyNetworkAgent():
