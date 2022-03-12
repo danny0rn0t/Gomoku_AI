@@ -26,7 +26,7 @@ class gobang:
     def printBoard(self, board, lastmove=None) -> int:
         print('* ', end='')
         for i in range(self.boardsize):
-            print(f'{i + 1}', end='')
+            print(f'{(i + 1) % 10}', end='')
             if i != self.boardsize - 1:
                 print(' ', end='')
         print(' ')
@@ -36,7 +36,7 @@ class gobang:
         # print('|', end='')
         # print()
         for i in range(self.boardsize):
-            print(f'{i + 1}|', end='')
+            print(f'{(i + 1) % 10}|', end='')
             for j in range(self.boardsize):
                 if lastmove is not None and i == lastmove[0] and j == lastmove[1]:
                     if board[i][j] == 1:
