@@ -11,19 +11,19 @@ class _ResidualBlock(nn.Module):
     def __init__(self, in_channels, out_channels, feature):
         super(_ResidualBlock, self).__init__()
         self.conv1 = nn.Conv2d(in_channels, feature, 3, 1, 1)
-        # self.bn1 = nn.BatchNorm2d(feature)
+        self.bn1 = nn.BatchNorm2d(feature)
         self.act1 = nn.ReLU()
         self.conv2 = nn.Conv2d(feature, out_channels, 3, 1, 1)
-        # self.bn2 = nn.BatchNorm2d(out_channels)
+        self.bn2 = nn.BatchNorm2d(out_channels)
         self.act2 = nn.ReLU()
     def forward(self, x):
         residual = x
         x = self.conv1(x)
-        # x = self.bn1(x)
+        x = self.bn1(x)
         x = self.act1(x)
 
         x = self.conv2(x)
-        # x = self.bn2(x)
+        x = self.bn2(x)
         x += residual
         x = self.act2(x)
         return x
@@ -34,7 +34,7 @@ class ResidualPolicyNetwork(nn.Module):
         self.game = game
         self.convNet1 = nn.Sequential(
             nn.Conv2d(1, feature, 3, 1, 1),
-            # nn.BatchNorm2d(feature),
+            nn.BatchNorm2d(feature),
             nn.ReLU()
         )
         layers = []
@@ -44,7 +44,7 @@ class ResidualPolicyNetwork(nn.Module):
         self.piHead = nn.Sequential(
             # pi.shape = N * 256 * bs * bs
             nn.Conv2d(feature, 2, 1, 1), # N * 2 * bs * bs
-            # nn.BatchNorm2d(2),
+            nn.BatchNorm2d(2),
             nn.ReLU(),
             nn.Flatten(),
             nn.Linear(2 * self.game.boardsize * self.game.boardsize, self.game.boardsize * self.game.boardsize), # (N, bs*bs)
@@ -53,7 +53,7 @@ class ResidualPolicyNetwork(nn.Module):
         self.vHead = nn.Sequential(
             # v.shape = N * 256 * bs * bs
             nn.Conv2d(feature, 1, 1, 1), # N * 1 * bs * bs
-            # nn.BatchNorm2d(1),
+            nn.BatchNorm2d(1),
             nn.ReLU(),
             nn.Flatten(), # (N, bs*bs)
             nn.Linear(self.game.boardsize * self.game.boardsize, feature),
@@ -112,12 +112,8 @@ class PolicyNetworkAgent():
                 self.optimizer.step()
             print(f"epoch {epoch + 1} | loss: {total_loss / n :.5f}")
     def calcLoss(self, X_pi, y_pi, X_v, y_v):
-        print(y_v.shape, y_pi.shape)
-        print(X_v)
-        print(y_v)
         l1 = torch.sum((X_v - y_v) ** 2) / y_v.shape[0]
         l2 = torch.sum(y_pi * torch.log(X_pi)) / y_pi.shape[0]
-        print(y_v.shape, y_pi.shape, l1, l2)
         return l1 - l2
     def save(self, PATH):
         Agent_Dict = {
