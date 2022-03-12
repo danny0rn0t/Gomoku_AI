@@ -88,7 +88,7 @@ class PolicyNetworkAgent():
         with torch.no_grad():
             pi, v = self.network(board)
         pi = pi.detach().cpu().numpy()[0]
-        v = v.detach().cpu().numpy().item()
+        v = v.detach().cpu().numpy()[0].item()
         return pi, v
     def learn(self, target):
         target = PolicyGradientNetworkDataset(target)
