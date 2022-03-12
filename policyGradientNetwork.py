@@ -47,7 +47,7 @@ class ResidualPolicyNetwork(nn.Module):
             # nn.BatchNorm2d(2),
             nn.ReLU(),
             nn.Flatten(),
-            nn.Linear(2 * self.game.boardsize * self.game.boardsize, self.game.boardsize * self.game.boardsize),
+            nn.Linear(2 * self.game.boardsize * self.game.boardsize, self.game.boardsize * self.game.boardsize), # (N, bs*bs)
             nn.LogSoftmax(dim=1)
         )
         self.vHead = nn.Sequential(
@@ -55,10 +55,10 @@ class ResidualPolicyNetwork(nn.Module):
             nn.Conv2d(feature, 1, 1, 1), # N * 1 * bs * bs
             # nn.BatchNorm2d(1),
             nn.ReLU(),
-            nn.Flatten(),
+            nn.Flatten(), # (N, bs*bs)
             nn.Linear(self.game.boardsize * self.game.boardsize, feature),
             nn.ReLU(),
-            nn.Linear(feature, 1),
+            nn.Linear(feature, 1), # (N, 1)
             nn.Tanh()
         )
     def forward(self, x):
@@ -68,9 +68,7 @@ class ResidualPolicyNetwork(nn.Module):
         x = self.residualBlocks(x) # N * 256 * bs * bs
         pi = self.piHead(x)
         v = self.vHead(x)
-        print(f"flag1: {pi.shape}, {v.shape}")
-        raise
-        return torch.exp(pi), v
+        return torch.exp(pi), torch.squeeze(v)
 
 class PolicyNetworkAgent():
     def __init__(self, network: ResidualPolicyNetwork, args):
@@ -91,6 +89,7 @@ class PolicyNetworkAgent():
             pi, v = self.network(board)
         pi = pi.detach().cpu().numpy()[0]
         v = v.detach().cpu().numpy().item()
+        print("flag2:{pi.shape}, {v.shape}")
         return pi, v
     def learn(self, target):
         target = PolicyGradientNetworkDataset(target)
