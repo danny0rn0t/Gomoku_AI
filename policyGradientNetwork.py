@@ -89,7 +89,7 @@ class PolicyNetworkAgent():
             pi, v = self.network(board)
         pi = pi.detach().cpu().numpy()[0]
         v = v.detach().cpu().numpy().item()
-        print(f"flag2:{pi.shape}, {v.shape}")
+        print(f"flag2:{pi}, {v}")
         return pi, v
     def learn(self, target):
         target = PolicyGradientNetworkDataset(target)
