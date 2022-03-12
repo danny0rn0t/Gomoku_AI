@@ -115,6 +115,7 @@ class PolicyNetworkAgent():
         print(y_v.shape, y_pi.shape)
         l1 = torch.sum((X_v - y_v) ** 2) / y_v.shape[0]
         l2 = torch.sum(y_pi * torch.log(X_pi)) / y_pi.shape[0]
+        print(y_v.shape, y_pi.shape, l1, l2)
         return l1 - l2
     def save(self, PATH):
         Agent_Dict = {
