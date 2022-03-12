@@ -68,6 +68,7 @@ class ResidualPolicyNetwork(nn.Module):
         x = self.residualBlocks(x) # N * 256 * bs * bs
         pi = self.piHead(x)
         v = self.vHead(x)
+        print(f"flag1: {pi.shape}, {v.shape}")
         return torch.exp(pi), v
 
 class PolicyNetworkAgent():
@@ -88,7 +89,7 @@ class PolicyNetworkAgent():
         with torch.no_grad():
             pi, v = self.network(board)
         pi = pi.detach().cpu().numpy()[0]
-        v = v.detach().cpu().numpy()[0].item()
+        v = v.detach().cpu().numpy().item()
         return pi, v
     def learn(self, target):
         target = PolicyGradientNetworkDataset(target)
