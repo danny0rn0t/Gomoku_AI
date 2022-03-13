@@ -92,7 +92,7 @@ class Chessboard:
                     y = self.start_y + r * self.grid_size
                     pygame.draw.circle(screen, color, [x, y], self.grid_size // 2)
                     if (r, c) == self.last_move:
-                        pygame.draw.circle(screen, (0, 0, 0) if piece == WHITE else (255, 255, 255), [x, y], self.grid_size // 6)
+                        pygame.draw.circle(screen, (0, 0, 0) if piece == WHITE else (255, 255, 255), [x, y], self.grid_size / 6)
 
 
         
