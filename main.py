@@ -7,7 +7,10 @@ import argparse
 from MCTS import MCTS
 from train import train
 from play import play
-
+from gameGUI import *
+from player import Player
+BLACK = 1
+WHITE = -1
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--play", action='store_true')
@@ -37,12 +40,23 @@ parser.add_argument("--learning_rate", type=float, default=0.0001)
 parser.add_argument("-o", "--play_order", type=int, default=2)
 parser.add_argument("-t", "--time_limit", type=float, choices=range(0, 60),default=5) # time limit for each move
 
+parser.add_argument("--GUI", action="store_true")
+parser.add_argument("-p1", "--player_type1", type=str)
+parser.add_argument("-l1", "--num_layer1", type=int, default=5)
+parser.add_argument("-m1", "--model_path1", type=str, default=None)
+parser.add_argument("-p2", "--player_type2", type=str)
+parser.add_argument("-l2", "--num_layer2", type=int, default=5)
+parser.add_argument("-m2", "--model_path2", type=str, default=None)
+
+
+
 # MCTS parameters:
 parser.add_argument("--epsilon", type=float, default=0.25) # dirichlet noise
 parser.add_argument("--alpha", type=float) # dirichlet noise
 parser.add_argument("--c_puct", type=float, default=4) # origin paper := 1
 
 args = parser.parse_args()
+
 
 if __name__ == '__main__':
     if args.train and args.play:
@@ -62,17 +76,29 @@ if __name__ == '__main__':
             args.model_save_path = f"gobang{args.boardsize}x{args.boardsize}_{args.residual_layers}L_{args.feature}F.ckpt"
     if args.alpha is None:
         args.alpha = 10 / ((args.boardsize**2)/2)
+    args.player_type1 = args.player_type1.upper()
+    args.player_type2 = args.player_type2.upper()
+    # if args.model_path1 is None:
+    #     args.model_path1 = f"gobang{args.boardsize}x{args.boardsize}_{args.residual_layers}L.ckpt"
+    # if args.model_path2 is None:
+    #     args.model_path2 = f"gobang{args.boardsize}x{args.boardsize}_{args.residual_layers}L.ckpt"
     
+    game = gobang(args.boardsize)
     if args.train:
-        game = gobang(args.boardsize)
+        
         model = ResidualPolicyNetwork(game, num_layers=args.residual_layers, feature=args.feature)
         model = PolicyNetworkAgent(model, args)
         model.load(args.model_save_path)
         trainer = train(game, model, args)
         trainer.train()
+    if args.play and args.GUI:
+        player1 = Player(game, args, args.player_type1, args.num_layer1, 256, args.model_path1)
+        player2 = Player(game, args, args.player_type2, args.num_layer2, 256, args.model_path2)
+        chessboard = Chessboard(game, args, player1, player2, args.time_limit)
+        gobangGUI = GobangGUI(chessboard)
+        gobangGUI.loop()
     elif args.play: # play
         assert (args.play_order == 1 or args.play_order == 2)
-        game = gobang(args.boardsize)
         model = ResidualPolicyNetwork(game, num_layers=args.residual_layers, feature=args.feature)
         model = PolicyNetworkAgent(model, args)
         model.load(args.model_save_path)

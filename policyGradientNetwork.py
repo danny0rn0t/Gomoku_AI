@@ -123,10 +123,12 @@ class PolicyNetworkAgent():
         torch.save(Agent_Dict, PATH)
     def load(self, PATH) -> int:
         try:
-            checkpoint = torch.load(PATH)
-            print(f"Loading checkpoint from {PATH} ...")
-        except:
-            print(f"Checkpoint not found, skip loading.")
+            checkpoint = torch.load(PATH, map_location=self.device)
+            print(f"Loading checkpoint from {PATH} ...  ", end='')
+            print("Done.")
+        except Exception as e:
+            print(e)
+            print(f"Checkpoint not found from {PATH}, skip loading.")
             return -1
         # checkpoint = torch.load(PATH, strict=True)
         self.network.load_state_dict(checkpoint["network"])
