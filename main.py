@@ -79,8 +79,10 @@ if __name__ == '__main__':
         args.model_path2 = f"gobang{args.boardsize}x{args.boardsize}_{args.num_layer2}L.ckpt"
     if args.alpha is None:
         args.alpha = 10 / ((args.boardsize**2)/2)
-    args.player_type1 = args.player_type1.upper()
-    args.player_type2 = args.player_type2.upper()
+    if args.player_type1 is not None:
+        args.player_type1 = args.player_type1.upper()
+    if args.player_type2 is not None:
+        args.player_type2 = args.player_type2.upper()
     
     
     game = gobang(args.boardsize)
