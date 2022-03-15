@@ -7,7 +7,7 @@ import argparse
 from MCTS import MCTS
 from train import train
 from play import play
-from gameGUI import *
+from gameGUI import playWithGUI, Chessboard
 from player import Player
 BLACK = 1
 WHITE = -1
