@@ -7,7 +7,6 @@ import argparse
 from MCTS import MCTS
 from train import train
 from play import play
-from gameGUI import playWithGUI, Chessboard
 from player import Player
 BLACK = 1
 WHITE = -1
@@ -108,6 +107,7 @@ if __name__ == '__main__':
             player2 = Player(args.player_type2)
 
         if args.GUI:
+            from gameGUI import playWithGUI, Chessboard
             chessboard = Chessboard(game, args, player1, player2, args.time_limit)
             gobangGUI = playWithGUI(chessboard)
             gobangGUI.loop()
