@@ -21,7 +21,7 @@ python3 main.py --play --boardsize=15 --num_layer=10 -p1 HUMAN -p2 AI --time_lim
 ```
 
 Play with GUI support (require pygame)
-``shell
+```åshell
 python3 main.py --play --boardsize=9 -p1 HUMAN -p2 AI --time_limit=10 --GUI
 ```
 
