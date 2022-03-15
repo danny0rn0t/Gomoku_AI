@@ -29,36 +29,36 @@ class _ResidualBlock(nn.Module):
         return x
 
 class ResidualPolicyNetwork(nn.Module):
-    def __init__(self, game: gobang, num_layers=20, feature=256):
+    def __init__(self, boardsize: int, num_layer=10, num_feature=256):
         super(ResidualPolicyNetwork, self).__init__()
-        self.game = game
+        self.boardsize = boardsize
         self.convNet1 = nn.Sequential(
-            nn.Conv2d(1, feature, 3, 1, 1),
-            nn.BatchNorm2d(feature),
+            nn.Conv2d(1, num_feature, 3, 1, 1),
+            nn.BatchNorm2d(num_feature),
             nn.ReLU()
         )
         layers = []
-        for i in range(num_layers):
-            layers.append(_ResidualBlock(feature, feature, feature))
+        for _ in range(num_layer):
+            layers.append(_ResidualBlock(num_feature, num_feature, num_feature))
         self.residualBlocks = nn.Sequential(*layers)
         self.piHead = nn.Sequential(
             # pi.shape = N * 256 * bs * bs
-            nn.Conv2d(feature, 2, 1, 1), # N * 2 * bs * bs
+            nn.Conv2d(num_feature, 2, 1, 1), # N * 2 * bs * bs
             nn.BatchNorm2d(2),
             nn.ReLU(),
             nn.Flatten(),
-            nn.Linear(2 * self.game.boardsize * self.game.boardsize, self.game.boardsize * self.game.boardsize), # (N, bs*bs)
+            nn.Linear(2 * self.boardsize * self.boardsize, self.boardsize * self.boardsize), # (N, bs*bs)
             nn.LogSoftmax(dim=1)
         )
         self.vHead = nn.Sequential(
             # v.shape = N * 256 * bs * bs
-            nn.Conv2d(feature, 1, 1, 1), # N * 1 * bs * bs
+            nn.Conv2d(num_feature, 1, 1, 1), # N * 1 * bs * bs
             nn.BatchNorm2d(1),
             nn.ReLU(),
             nn.Flatten(), # (N, bs*bs)
-            nn.Linear(self.game.boardsize * self.game.boardsize, feature),
+            nn.Linear(self.boardsize * self.boardsize, num_feature),
             nn.ReLU(),
-            nn.Linear(feature, 1), # (N, 1)
+            nn.Linear(num_feature, 1), # (N, 1)
             nn.Tanh()
         )
     def forward(self, x):
@@ -71,13 +71,14 @@ class ResidualPolicyNetwork(nn.Module):
         return torch.exp(pi), torch.squeeze(v)
 
 class PolicyNetworkAgent():
-    def __init__(self, network: ResidualPolicyNetwork, args):
-        self.network = network
-        self.optimizer = optim.SGD(self.network.parameters(), lr=args.learning_rate, momentum=0.9, weight_decay=0.0001)
-        self.args = args
-        self.boardsize = network.game.boardsize
-        self.device = torch.device(self.args.device)
+    def __init__(self, boardsize: int, num_layer: int, num_feature: int, learning_rate: int, device: str, batchsize: int, num_epoch: int):
+        self.network = ResidualPolicyNetwork(boardsize, num_layer, num_feature)
+        self.optimizer = optim.SGD(self.network.parameters(), lr=learning_rate, momentum=0.9, weight_decay=0.0001)
+        self.boardsize = boardsize
+        self.device = torch.device(device)
         self.network.to(self.device)
+        self.batchsize = batchsize
+        self.num_epoch = num_epoch
     def forward(self, board: np.ndarray):
         # board.shape = (boardsize, boardsize)
         board = torch.FloatTensor(board.astype(np.float64)).contiguous()
@@ -92,8 +93,8 @@ class PolicyNetworkAgent():
         return pi, v
     def learn(self, target):
         target = PolicyGradientNetworkDataset(target)
-        target = DataLoader(target, batch_size=self.args.batchsize, shuffle=True, drop_last=True)
-        for epoch in range(self.args.num_epoch):
+        target = DataLoader(target, batch_size=self.batchsize, shuffle=True, drop_last=True)
+        for epoch in range(self.num_epoch):
             self.network.train()
             total_loss = 0
             n = 0

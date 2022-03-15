@@ -1,5 +1,4 @@
 import numpy as np
-from copy import deepcopy
 class gobang:
     def __init__(self, boardsize):
         # black: 1

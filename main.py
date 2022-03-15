@@ -23,8 +23,8 @@ parser.add_argument("--num_thread", type=int, choices=range(1, 17) ,default=1)
 parser.add_argument("--boardsize", type=int, default=9)
 
 # policy network architecture parameters:
-parser.add_argument("--residual_layers", type=int, default=5) # paper: 20
-parser.add_argument("--feature", type=int, default=256)
+parser.add_argument("--num_layer", type=int, default=5) # paper: 20
+parser.add_argument("--num_feature", type=int, default=256)
 
 # training parameters:
 parser.add_argument("--num_iteration", type=int, default=1000)
@@ -37,7 +37,6 @@ parser.add_argument("--update_threshold", type=float, default=0.55) # paper: 0.5
 parser.add_argument("--learning_rate", type=float, default=0.0001)
 
 # playing parameters:
-parser.add_argument("-o", "--play_order", type=int, default=2)
 parser.add_argument("-t", "--time_limit", type=float, choices=range(0, 60),default=5) # time limit for each move
 
 parser.add_argument("--GUI", action="store_true")
@@ -62,7 +61,7 @@ if __name__ == '__main__':
     if args.train and args.play:
         print("One work at a time!")
         exit(0)
-    if not args.train and not args.play:
+    if (not args.train) and (not args.play):
         print("No work was assigned!")
         exit(0)
     
@@ -70,42 +69,45 @@ if __name__ == '__main__':
     if args.device is None:
         args.device = "cuda" if torch.cuda.is_available() else "cpu"
     if args.model_save_path is None:
-        if args.feature == 256:
-            args.model_save_path = f"gobang{args.boardsize}x{args.boardsize}_{args.residual_layers}L.ckpt"
+        if args.num_feature == 256:
+            args.model_save_path = f"gobang{args.boardsize}x{args.boardsize}_{args.num_layer}L.ckpt"
         else:
-            args.model_save_path = f"gobang{args.boardsize}x{args.boardsize}_{args.residual_layers}L_{args.feature}F.ckpt"
+            args.model_save_path = f"gobang{args.boardsize}x{args.boardsize}_{args.num_layer}L_{args.num_feature}F.ckpt"
     if args.alpha is None:
         args.alpha = 10 / ((args.boardsize**2)/2)
     args.player_type1 = args.player_type1.upper()
     args.player_type2 = args.player_type2.upper()
-    # if args.model_path1 is None:
-    #     args.model_path1 = f"gobang{args.boardsize}x{args.boardsize}_{args.residual_layers}L.ckpt"
-    # if args.model_path2 is None:
-    #     args.model_path2 = f"gobang{args.boardsize}x{args.boardsize}_{args.residual_layers}L.ckpt"
+    
     
     game = gobang(args.boardsize)
     if args.train:
-        
-        model = ResidualPolicyNetwork(game, num_layers=args.residual_layers, feature=args.feature)
-        model = PolicyNetworkAgent(model, args)
+        model = PolicyNetworkAgent(args.boardsize, args.num_layer, args.num_feature, args.learning_rate, args.device, args.batchsize, args.num_epoch)
         model.load(args.model_save_path)
         trainer = train(game, model, args)
         trainer.train()
-    if args.play and args.GUI:
-        player1 = Player(game, args, args.player_type1, args.num_layer1, 256, args.model_path1)
-        player2 = Player(game, args, args.player_type2, args.num_layer2, 256, args.model_path2)
-        chessboard = Chessboard(game, args, player1, player2, args.time_limit)
-        gobangGUI = GobangGUI(chessboard)
-        gobangGUI.loop()
-    elif args.play: # play
-        assert (args.play_order == 1 or args.play_order == 2)
-        model = ResidualPolicyNetwork(game, num_layers=args.residual_layers, feature=args.feature)
-        model = PolicyNetworkAgent(model, args)
-        model.load(args.model_save_path)
-        if args.play_order == 1:
-            play(game, 'human', model, args.num_simulation, args, display=True, time_limit=args.time_limit)
+    elif args.play:
+        if args.player_type1 == 'AI':
+            model1 = PolicyNetworkAgent(args.boardsize, args.num_layer1, 256, args.learning_rate, args.device, args.batchsizs, args.num_epoch)
+            model1.load(args.model_path1)
+            mct1 = MCTS(game, model1, args.alpha, args.epsilon, args.c_puct)
+            player1 = Player(args.player_type1, model1, mct1)
         else:
-            play(game, model, 'human', args.num_simulation, args,display=True, time_limit=args.time_limit)
+            player1 = Player(args.player_type1)
+        if args.player_type2 == 'AI':
+            model2 = PolicyNetworkAgent(args.boardsize, args.num_layer2, 256, args.learning_rate, args.device, args.batchsizs, args.num_epoch)
+            model2.load(args.model_path2)
+            mct2 = MCTS(game, model1, args.alpha, args.epsilon, args.c_puct)
+            player1 = Player(args.player_type2, model2, mct2)
+        else:
+            player2 = Player(args.player_type2)
+
+        if args.GUI:
+            chessboard = Chessboard(game, args, player1, player2, args.time_limit)
+            gobangGUI = GobangGUI(chessboard)
+            gobangGUI.loop()
+        else:
+            play(game, player1, player2, -1, True, args.time_limit)
+
 
 
 

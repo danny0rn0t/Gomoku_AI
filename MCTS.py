@@ -3,19 +3,20 @@ import numpy as np
 import math
 from game import gobang
 from policyGradientNetwork import *
-from copy import deepcopy
 from collections import defaultdict
 import time
 from torch.distributions.dirichlet import Dirichlet
 import random
 class MCTS():
-    def __init__(self, game: gobang, model: PolicyNetworkAgent, args):
+    def __init__(self, game: gobang, model: PolicyNetworkAgent, alpha: float, epsilon: float, c_puct: float):
         self.model = model
         self.game = game
-        self.args = args
+        self.alpha = alpha
+        self.epsilon = epsilon
+        self.c_puct = c_puct
 
         # adding Dirichlet noise to the root node for additional exploration
-        self.Dir_noise = Dirichlet(torch.Tensor([self.args.alpha for _ in range(self.game.boardsize**2)]))
+        self.Dir_noise = Dirichlet(torch.Tensor([self.alpha for _ in range(self.game.boardsize**2)]))
 
         self.Nsa = defaultdict(int) # action visit count
         self.Ns = defaultdict(int) # state visit count
@@ -26,10 +27,10 @@ class MCTS():
         self.Es = defaultdict(int) # check game result at state s
         self.Vs = defaultdict(int) # valid moves at state s
     
-    def simulateAndPredict(self, state: np.ndarray, NUM_SIMULATION: int, get_reward=False, time_limit=None, is_root=False):
+    def simulateAndPredict(self, state: np.ndarray, num_simulation: int, get_reward=False, time_limit=None, is_root=False):
         # is_root is True if the board (state) is empty
         s = state.tobytes()
-        totalSimulation = NUM_SIMULATION
+        totalSimulation = num_simulation
         if time_limit is not None:
             totalSimulation = 0
             startTime = time.time()
@@ -37,7 +38,7 @@ class MCTS():
                 self.run(state, is_root)
                 totalSimulation += 1
         else:
-            for i in range(NUM_SIMULATION):
+            for i in range(num_simulation):
                 self.run(state, is_root)
         cnt = []
         for a in range(self.game.boardsize**2):
@@ -85,7 +86,7 @@ class MCTS():
         bestScore = None
         for a in range(self.game.boardsize**2):
             if not self.Vs[s][a]: continue
-            u = self.Qsa[(s, a)] + self.args.c_puct * self.Ps[s][a] * math.sqrt(self.Ns[s]) / (1 + self.Nsa[(s, a)])
+            u = self.Qsa[(s, a)] + self.c_puct * self.Ps[s][a] * math.sqrt(self.Ns[s]) / (1 + self.Nsa[(s, a)])
             if bestScore is None or u > bestScore:
                 bestScore = u
                 bestMove = a
@@ -100,7 +101,7 @@ class MCTS():
         
         validMoves = self.game.getValidMoves(state)
         if is_root: # adding Dirichlet noise for additional exploration
-            pi = (1 - self.args.epsilon) * pi + self.args.epsilon * (self.Dir_noise.sample().numpy())
+            pi = (1 - self.epsilon) * pi + self.epsilon * (self.Dir_noise.sample().numpy())
         pi *= validMoves
         if np.sum(pi) <= 0:
             pi = pi + validMoves
