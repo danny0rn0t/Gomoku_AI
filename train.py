@@ -60,8 +60,8 @@ class train:
                 threads[t].join()
             # for _ in tqdm(range(self.args.num_episode)):
             #     data += self.selfPlay()
-            self.oldModel.save(self.args.model_save_path)
-            self.newModel.load(self.args.model_save_path)
+            self.oldModel.save(self.args.model_path)
+            self.newModel.load(self.args.model_path)
             
             self.newModel.learn(data)
 
@@ -86,8 +86,8 @@ class train:
             print(f"iteration: {i} | {newWins} win, {oldWins} loss, {ties} tie |")
             if winrate >= self.args.update_threshold:
                 print("Update new model!")
-                self.newModel.save(self.args.model_save_path)
-                self.oldModel.load(self.args.model_save_path)
+                self.newModel.save(self.args.model_path)
+                self.oldModel.load(self.args.model_path)
             else:
                 print("Discard new model!")
 
