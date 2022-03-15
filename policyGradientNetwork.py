@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
-from game import *
 from tqdm import tqdm
 from dataset import PolicyGradientNetworkDataset
 import numpy as np
@@ -63,7 +62,7 @@ class ResidualPolicyNetwork(nn.Module):
         )
     def forward(self, x):
         # x.shape = N * boardsize * boardsize
-        x = x.view(-1, 1, self.game.boardsize, self.game.boardsize) # N * 1 * boardsize * boardsize
+        x = x.view(-1, 1, self.boardsize, self.boardsize) # N * 1 * boardsize * boardsize
         x = self.convNet1(x) # N * 256 * bs * bs
         x = self.residualBlocks(x) # N * 256 * bs * bs
         pi = self.piHead(x)

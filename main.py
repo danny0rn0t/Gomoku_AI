@@ -16,7 +16,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--play", action='store_true')
 parser.add_argument("--train", action='store_true')
 parser.add_argument("--device", type=str)
-parser.add_argument("--model_save_path", type=str)
+parser.add_argument("--model_path", type=str)
 parser.add_argument("--num_thread", type=int, choices=range(1, 17) ,default=1)
 
 # game parameters:
@@ -68,11 +68,15 @@ if __name__ == '__main__':
     # check args
     if args.device is None:
         args.device = "cuda" if torch.cuda.is_available() else "cpu"
-    if args.model_save_path is None:
+    if args.model_path is None:
         if args.num_feature == 256:
-            args.model_save_path = f"gobang{args.boardsize}x{args.boardsize}_{args.num_layer}L.ckpt"
+            args.model_path = f"gobang{args.boardsize}x{args.boardsize}_{args.num_layer}L.ckpt"
         else:
-            args.model_save_path = f"gobang{args.boardsize}x{args.boardsize}_{args.num_layer}L_{args.num_feature}F.ckpt"
+            args.model_path = f"gobang{args.boardsize}x{args.boardsize}_{args.num_layer}L_{args.num_feature}F.ckpt"
+    if args.model_path1 is None:
+        args.model_path1 = f"gobang{args.boardsize}x{args.boardsize}_{args.num_layer1}L.ckpt"
+    if args.model_path2 is None:
+        args.model_path2 = f"gobang{args.boardsize}x{args.boardsize}_{args.num_layer2}L.ckpt"
     if args.alpha is None:
         args.alpha = 10 / ((args.boardsize**2)/2)
     args.player_type1 = args.player_type1.upper()
@@ -82,28 +86,28 @@ if __name__ == '__main__':
     game = gobang(args.boardsize)
     if args.train:
         model = PolicyNetworkAgent(args.boardsize, args.num_layer, args.num_feature, args.learning_rate, args.device, args.batchsize, args.num_epoch)
-        model.load(args.model_save_path)
+        model.load(args.model_path)
         trainer = train(game, model, args)
         trainer.train()
     elif args.play:
         if args.player_type1 == 'AI':
-            model1 = PolicyNetworkAgent(args.boardsize, args.num_layer1, 256, args.learning_rate, args.device, args.batchsizs, args.num_epoch)
+            model1 = PolicyNetworkAgent(args.boardsize, args.num_layer1, 256, args.learning_rate, args.device, args.batchsize, args.num_epoch)
             model1.load(args.model_path1)
             mct1 = MCTS(game, model1, args.alpha, args.epsilon, args.c_puct)
             player1 = Player(args.player_type1, model1, mct1)
         else:
             player1 = Player(args.player_type1)
         if args.player_type2 == 'AI':
-            model2 = PolicyNetworkAgent(args.boardsize, args.num_layer2, 256, args.learning_rate, args.device, args.batchsizs, args.num_epoch)
+            model2 = PolicyNetworkAgent(args.boardsize, args.num_layer2, 256, args.learning_rate, args.device, args.batchsize, args.num_epoch)
             model2.load(args.model_path2)
-            mct2 = MCTS(game, model1, args.alpha, args.epsilon, args.c_puct)
-            player1 = Player(args.player_type2, model2, mct2)
+            mct2 = MCTS(game, model2, args.alpha, args.epsilon, args.c_puct)
+            player2 = Player(args.player_type2, model2, mct2)
         else:
             player2 = Player(args.player_type2)
 
         if args.GUI:
             chessboard = Chessboard(game, args, player1, player2, args.time_limit)
-            gobangGUI = GobangGUI(chessboard)
+            gobangGUI = playWithGUI(chessboard)
             gobangGUI.loop()
         else:
             play(game, player1, player2, -1, True, args.time_limit)

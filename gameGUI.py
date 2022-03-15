@@ -97,7 +97,7 @@ class Chessboard:
 
         
 
-class GobangGUI:
+class playWithGUI:
     def __init__(self, chessboard: Chessboard):
         pygame.init()
         self.screen = pygame.display.set_mode((800, 600))
@@ -106,13 +106,14 @@ class GobangGUI:
         self.going = True
         self.chessboard = chessboard
     def loop(self):
+        self.draw()
         while self.going:
+            self.update()
             self.draw()
             self.clock.tick(60)
-            self.update()
         pygame.quit()
     def update(self):
-        if self.chessboard.player.player_type == 'AI':
+        if self.chessboard.player.player_type == 'AI' and not self.chessboard.game_over:
             self.chessboard.play()
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
