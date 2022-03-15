@@ -1,8 +1,6 @@
 import numpy as np
 from game import gobang
 from policyGradientNetwork import *
-import torch
-from MCTS import MCTS
 from player import Player
 
 
@@ -19,7 +17,7 @@ def play(game: gobang, player1: Player, player2: Player, num_simulation: int=100
         winrate = None
         i = j = None
         if player.player_type == 'HUMAN':
-            pos = list(map(int, input('Your turn, enter x y =>').split()))
+            pos = list(map(int, input(f'Player{1 if player.color == 1 else 2}\'s turn, enter x y =>').split()))
             if len(pos) != 2:
                 print('wrong format')
                 continue

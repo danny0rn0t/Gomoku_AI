@@ -1,5 +1,4 @@
 import numpy as np
-from play import play
 from policyGradientNetwork import *
 from MCTS import MCTS
 import numpy as np
