@@ -26,3 +26,10 @@ python3 main.py --play --boardsize=9 -p1 HUMAN -p2 AI --time_limit=10 --GUI
 ```
 
 Check out other options in main.py
+
+## References
+[Mastering the game of Go with deep neural networks and tree search](https://www.nature.com/articles/nature16961.pdf) (AlphaGo)
+
+[Mastering the game of Go without human knowledge](https://www.nature.com/articles/nature24270.pdf) (AlphaGO Zero)
+
+[Pygame Tutorial](https://github.com/HackerSir/PygameTutorials/blob/master/Lesson04)
