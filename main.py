@@ -28,7 +28,7 @@ parser.add_argument("--num_feature", type=int, default=256)
 # training parameters:
 parser.add_argument("--num_iteration", type=int, default=1000)
 parser.add_argument("--num_episode", type=int, default=100) # paper: 500000
-parser.add_argument("--num_simulation", type=int, default=160) # paper: 1600
+parser.add_argument("--num_simulation", type=int, default=1600) # paper: 1600
 parser.add_argument("--num_game_inference", type=int, default=40) # paper: 400
 parser.add_argument("--num_epoch", type=int, default=10)
 parser.add_argument("--batchsize", type=int, default=8)
